@@ -29,33 +29,33 @@ def get_img_as_base64(file_path):
         return ""
 
 # --- POP-UPS ---
-@st.dialog("Detalle del Proceso")
+@st.dialog("Tape Recorder")
 def mostrar_popup(fase_id):
     if fase_id == 1:
-        st.subheader("1. Ascenso Tropical")
-        st.markdown("El aire cálido y húmedo en el ecuador es calentado por el sol, subiendo rápidamente hasta la tropopausa.")
+        st.subheader("Zona tropical")
+        st.markdown("En el trópico, bajo el dominio de la célula de Hadley, observamos la señal canónica del tape recorder. Las bandas diagonales ascendentes muestran cómo el aire, al elevarse, transporta la firma estacional del vapor de agua hacia la estratosfera. Este patrón es la evidencia directa del lento ascenso que define la rama ascendente de la circulación Brewer-Dobson.")
         try: st.image("assets/images/fase1_ascenso.png")
         except: st.warning("Falta imagen")
-        if st.button("Siguiente Fase ➡️"):
+        if st.button("Siguiente ➡️"):
             st.session_state.popup_activo = 2
             st.rerun()
     elif fase_id == 2:
-        st.subheader("2. Transporte hacia los Polos")
-        st.markdown("El aire se mueve horizontalmente hacia los polos, llevando ozono y vapor de agua.")
+        st.subheader("Latitudes medias")
+        st.markdown("En las latitudes medias, la señal de ascenso desaparece. La dinámica aquí está dominada por la célula de Ferrel, que se caracteriza por un movimiento de aire superficial hacia los polos y un descenso de aire estratosférico. El gráfico muestra un fuerte ciclo estacional, pero sin la propagación vertical vista en el trópico, indicando una ausencia de ascenso neto a gran escala hacia la estratosfera.")
         try: st.image("assets/images/fase2_transporte.png")
         except: st.warning("Falta imagen")
         col_back, col_next = st.columns(2)
         with col_back:
-            if st.button("⬅️ Fase Anterior"):
+            if st.button("⬅️ Anterior"):
                 st.session_state.popup_activo = 1
                 st.rerun()
         with col_next:
-            if st.button("Siguiente Fase ➡️"):
+            if st.button("Siguiente ➡️"):
                 st.session_state.popup_activo = 3
                 st.rerun()
     elif fase_id == 3:
-        st.subheader("3. Descenso en Latitudes Medias")
-        st.markdown("Al enfriarse en latitudes altas, el aire desciende nuevamente.")
+        st.subheader("Zona polar")
+        st.markdown("En las regiones polares, el aire es extremadamente seco, una característica del dominio de la célula Polar. Este es el punto de descenso principal de la circulación Brewer-Dobson. El aire que ha viajado por la estratosfera pierde su humedad y desciende de nuevo a la troposfera, por lo que no se observa ninguna señal de ascenso, sino un fuerte ciclo anual influenciado por el vórtice polar.")
         try: st.image("assets/images/fase3_descenso.png")
         except: st.warning("Falta imagen")
         if st.button("🔄 Volver al inicio"):
@@ -156,61 +156,80 @@ def render():
         st.header("2. Expliquemos lo observado")
         col_txt, col_img = st.columns(2)
         with col_txt:
-            st.markdown("### La Circulación Global")
-            st.write("Explicación general del fenómeno Brewer-Dobson...")
+            st.markdown("### Un océano de aire organizado: La Circulación Global")
+            st.write("Aunque el movimiento del aire puede parecer caótico, a gran escala se organiza en gigantescos patrones de circulación que distribuyen el calor desde el ecuador hacia los polos. Estas son las tres célular principales en cada hemisferio:")
+            st.info("**1. Célula de Hadley (0° a 30°)**\n\nEl motor del trópico. El aire caliente y húmedo asciende en el ecuador, se enfria, y luego desciende en las zonas subtropicales.")
+            st.warning("**2. Célula de Ferrel (30° a 60°)**\n\nLa célula de las latitudes medias. No es impulsada directamente por la temperatura, si no que actúa como un engranaje entre las otras dos célular, con un movimiento promedio de aire superficial hacia los polos.")
+            st.success("**3. Célula Polar (60° a 90°)**\n\nEn los polos, el aire frío y denso desciende y se desplaza hacia latitudes más bajas.")
+
         with col_img:
-            try: st.image("assets/images/esquema_bd.png")
+            try: st.image("assets/images/celulas-hadley-2.jpg")
             except: st.write("Falta img")
 
     elif st.session_state.paso_modulo1 == 4:
         st.header("2. Expliquemos lo observado")
-        st.subheader("Las 3 Fases del Motor Atmosférico")
+        st.subheader("Evidencia del transporte atmosférico: La señal del Tape Recorder")
+        st.write("El 'tape recorder' atmosférico es un término análogo utilizado para describir la 'grabación' de las variaciones estacionales de un trazador químico (como el vapor de agua) en las masas de aire que ascienden lentamente en la estratosfera tropical. A medida que el aire sube, transporta consigo la firma de la concentración del trazador presente en la tropopausa, creando un patrón vertical que, al ser visualizado en el tiempo se semeja a las bandas de una cinta magnética. Este fenómeno constituye una de las evidencias más directas del lento ascenso de la céñula de Hadley hacia la estratosfera.")
         col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button("🔥 Ascenso Tropical", use_container_width=True):
+            if st.button("Zona Tropical", use_container_width=True):
                 st.session_state.popup_activo = 1
                 st.rerun()
         with col2:
-            if st.button("✈️ Transporte Hacia Polos", use_container_width=True):
+            if st.button("Latitudes Medias", use_container_width=True):
                 st.session_state.popup_activo = 2
                 st.rerun()
         with col3:
-            if st.button("❄️ Descenso Polar", use_container_width=True):
+            if st.button("Zona Polar", use_container_width=True):
                 st.session_state.popup_activo = 3
                 st.rerun()
 
     elif st.session_state.paso_modulo1 == 5:
         st.header("2. Expliquemos lo observado")
-        st.subheader("Conclusiones Clave")
-        st.info("**1. El Motor Térmico**\n\nEl sol calienta el ecuador más que los polos...")
-        st.warning("**2. La Cinta Transportadora**\n\nEste flujo distribuye gases de efecto invernadero...")
-        st.success("**3. Escala de Tiempo**\n\nNo es un viento rápido; es una circulación lenta...")
+        st.subheader("¿Notaste los patrones?")
+        st.write("Como viste, la señal de ascenso clara del 'Tape Recorder' solo aparece en la zona tropical. En las latitudes medias y polares, el patrón es muy diferente. ¿Por qué ocurre esto?")
+        st.success("La respuesta está en los principios fundamentales que gobiernan la atmósfera. Para entenderlo, necesitamos definir dos ideas clave: Fluido y Flujo.")
 
     elif st.session_state.paso_modulo1 == 6:
         st.header("3. Entendiendo el fenómeno")
-        st.subheader("Concepto 1: El Fluido")
-        st.markdown("Un fluido es cualquier sustancia que no tiene una forma fija...")
-        try: st.image("assets/images/concepto_fluido.gif", use_container_width=True)
-        except: st.warning("Falta gif fluido")
+        st.subheader("El Fluido")
+        col_fluido, col_imgfluido = st.columns(2)
+        with col_fluido:
+            st.markdown("En física, un fluido es una sustancia que se deforma continuamente bajo la aplicación de una tensión cortante, sin importar cuán pequeña sea. En términos más simples, es una sustancia cuyas partículas no tienen una posición fija y pueden moverse con libertad."
+                    "\n\nEl aire que compone nuestra atmósfera, una mezcla de gases como nitrógeno, oxígeno y vapor de agua, es un ejemplo clásico de un fluido compresible.")
+        with col_imgfluido:
+            try: st.image("assets/images/concepto_fluido.gif", use_container_width=True)
+            except: st.warning("Falta gif fluido")
 
     elif st.session_state.paso_modulo1 == 7:
         st.header("3. Entendiendo el fenómeno")
-        st.subheader("Concepto 2: El Flujo")
-        st.markdown("Es el movimiento del fluido...")
-        try: st.image("assets/images/concepto_flujo.gif", use_container_width=True)
-        except: st.warning("Falta gif flujo")
+        st.subheader("El Flujo")
+        col_flujo, col_flujoimg = st.columns(2)
+        with col_flujo:
+            st.markdown("El flujo es el movimiento macroscópico y colectivo de un fluido. Es el resultado de diferencias de presión y temperatura que impulsan a las partículas del fluido en una dirección general. En la atmósfera, este movimiento se manifiesta como el viento."
+                        "\n\nEl flujo puede ser:"
+                        "\n1. Laminar: Suave y ordenado, con capas de fluido que se deslizan unas sobre otras."
+                        "\n2. Turbulento: Caótico e irregular, con remolinos y vórtices.")
+        with col_flujoimg:
+            try: st.image("assets/images/concepto_flujo.gif", use_container_width=True)
+            except: st.warning("Falta gif flujo")
 
     elif st.session_state.paso_modulo1 == 8:
         st.header("3. Entendiendo el fenómeno")
-        st.subheader("Concepto 3: La Circulación")
-        st.markdown("Cuando el flujo se organiza en un patrón cerrado...")
-        try: st.image("assets/images/concepto_circulacion.gif", use_container_width=True)
-        except: st.warning("Falta gif circulacion")
+        st.subheader("La Circulación BD")
+        col_circ, col_circimg = st.columns(2)
+        with col_circ:
+            st.markdown("La Circulación de Brewer-Dobson es un modelo que describe el flujo promedio y a gran escala del fluido atmosférico en la estratosfera. No es un viento que se pueda medir en un solo lugar, sino un lento movimiento residual a escala planetaria."
+                        "\n\nEste flujo es el principal mecanismo de transporte de masa y energía entre la estratosfera tropical y la polar, siendo responsable de la distribución global de trazadores clave como el ozono y el vapor de agua.")
+        with col_circimg:
+            try: st.image("assets/images/concepto_circulacion.gif", use_container_width=True)
+            except: st.warning("Falta gif circulacion")
 
     elif st.session_state.paso_modulo1 == 9:
         st.header("4. Hora de explorar")
         if st.session_state.view_simulador == 'menu':
-            st.markdown("Selecciona un simulador para comenzar:")
+            st.markdown("El movimiento del aire, su temperatura y presión están conectados. Para complementar la teoría, experimenta tú mismo con estos conceptos en los simuladores interactivos de PhET Colorado." \
+            "\nSelecciona un simulador para comenzar:")
             col_sim1, col_sim2, col_sim3 = st.columns(3)
             with col_sim1:
                 st.image("https://phet.colorado.edu/sims/html/states-of-matter/latest/states-of-matter-600.png")

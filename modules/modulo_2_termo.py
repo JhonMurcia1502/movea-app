@@ -4,16 +4,17 @@ import pandas as pd
 import base64
 
 # --- CONFIGURACIÓN DE LAS UNIDADES ---
+# Ajustamos los índices porque agregamos una pantalla más (Total: 12 pasos)
 UNIDADES = {
     "1. Observemos el fenómeno": 1,
     "2. Expliquemos lo observado": 3,
-    "3. Entendiendo el fenómeno": 6,
-    "4. Hora de explorar": 8,
-    "5. Pon a prueba tu conocimiento": 9,
-    "6. Encuesta de satisfacción": 10
+    "3. Entendiendo el fenómeno": 7, # Se mueve al 7
+    "4. Hora de explorar": 10,       # Se mueve al 10
+    "5. Pon a prueba tu conocimiento": 11,
+    "6. Encuesta de satisfacción": 12
 }
 
-# --- URL SIMULADOR (PhET: Formas y Cambios de Energía) ---
+# --- URL SIMULADOR ---
 URL_ENERGIA = "https://phet.colorado.edu/sims/html/energy-forms-and-changes/latest/energy-forms-and-changes_es.html"
 
 # --- FUNCIÓN IMÁGENES ---
@@ -25,29 +26,86 @@ def get_img_as_base64(file_path):
     except Exception:
         return ""
 
+# --- POP-UPS (Unidad 2) ---
+@st.dialog("Concepto: Densidad")
+def mostrar_densidad():
+    st.subheader("¿Por qué sube el aire?")
+    st.markdown("""
+    **La clave es la DENSIDAD.**
+    
+    Imagina una caja llena de pelotas (moléculas).
+    * **Aire Frío:** Las pelotas están quietas y apretadas. Pesan más.
+    * **Aire Caliente:** Las pelotas se mueven rápido y se separan. Ocupan más espacio pero pesan menos.
+    
+    Al ser más ligero, el aire caliente flota sobre el frío.
+    """)
+
+@st.dialog("Mecanismo de Transferencia")
+def mostrar_mecanismo(tipo):
+    if tipo == "radiacion":
+        st.subheader("1. Radiación ☀️")
+        st.markdown("Es energía que viaja por el espacio. El Sol emite ondas electromagnéticas hasta la Tierra.")
+        try: st.image("assets/images/mod2_radiacion.png")
+        except: st.warning("Falta img")
+        if st.button("Siguiente: Conducción ➡️"): st.session_state.popup_mecanismo = "conduccion"; st.rerun()
+
+    elif tipo == "conduccion":
+        st.subheader("2. Conducción 🔥")
+        st.markdown("Es calor por contacto directo. El suelo caliente pasa energía al aire que lo toca.")
+        try: st.image("assets/images/mod2_conduccion.png")
+        except: st.warning("Falta img")
+        col_prev, col_next = st.columns(2)
+        with col_prev:
+            if st.button("⬅️ Anterior"): st.session_state.popup_mecanismo = "radiacion"; st.rerun()
+        with col_next:
+            if st.button("Siguiente: Convección ➡️"): st.session_state.popup_mecanismo = "conveccion"; st.rerun()
+
+    elif tipo == "conveccion":
+        st.subheader("3. Convección 🌬️")
+        st.markdown("Es calor en movimiento. El aire caliente sube transportando energía.")
+        try: st.image("assets/images/mod2_conveccion.png")
+        except: st.warning("Falta img")
+        col_prev, col_next = st.columns(2)
+        with col_prev:
+            if st.button("⬅️ Anterior"): st.session_state.popup_mecanismo = "conduccion"; st.rerun()
+        with col_next:
+            if st.button("🔄 Cerrar y Continuar"): st.session_state.popup_mecanismo = None; st.rerun()
+
 def render():
     # --- ESTADO INICIAL ---
     if 'paso_modulo2' not in st.session_state:
         st.session_state.paso_modulo2 = 1
     if 'resultados_quiz_m2' not in st.session_state:
         st.session_state.resultados_quiz_m2 = None
+    if 'popup_mecanismo' not in st.session_state:
+        st.session_state.popup_mecanismo = None
+    if 'vista_monzon' not in st.session_state:
+        st.session_state.vista_monzon = 'intro'
 
-    # Función de navegación lateral
+    # Seguridad: Si no estamos en el paso del Monzón (9), resetear vista
+    if st.session_state.paso_modulo2 != 9:
+        st.session_state.vista_monzon = 'intro'
+
+    # Activar Popups
+    if st.session_state.popup_mecanismo is not None:
+        mostrar_mecanismo(st.session_state.popup_mecanismo)
+
     def ir_a_unidad():
         if st.session_state.selector_unidad_m2 in UNIDADES:
             st.session_state.paso_modulo2 = UNIDADES[st.session_state.selector_unidad_m2]
+            st.session_state.vista_monzon = 'intro'
 
     def siguiente():
         st.session_state.paso_modulo2 += 1
+        st.session_state.vista_monzon = 'intro'
     
     def anterior():
         st.session_state.paso_modulo2 -= 1
+        st.session_state.vista_monzon = 'intro'
 
-    # --- SIDEBAR (Barra Lateral) ---
+    # --- SIDEBAR ---
     st.sidebar.markdown("---")
     st.sidebar.header("📍 Estructura Módulo 2")
-    
-    # Determinar unidad actual
     unidad_actual = "1. Observemos el fenómeno"
     for nombre, paso_inicio in UNIDADES.items():
         if st.session_state.paso_modulo2 >= paso_inicio:
@@ -62,216 +120,240 @@ def render():
     )
 
     # ==========================================
-    # DESARROLLO DEL CONTENIDO (Basado en PDF)
+    # DESARROLLO DEL CONTENIDO
     # ==========================================
 
-    # --- UNIDAD 1: OBSERVA (INTRO) ---
+    # --- UNIDAD 1: OBSERVA ---
     if st.session_state.paso_modulo2 == 1:
         st.title("MÓDULO 2: EL AIRE QUE SE ELEVA")
         st.subheader("Transferencia de Calor y Convección")
-        
         st.markdown("""
         ### Detrás de cada corriente de aire hay un motor silencioso: el calor.
-        
         En este módulo aprenderás cómo la energía solar calienta la superficie de la Tierra, 
         generando movimientos verticales que dan origen a la **convección**.
-        
-        Descubre cómo el calor no solo se siente, sino que **mueve el mundo**.
         """)
-        st.info("👇 Presiona **Siguiente** para comenzar el viaje.")
+        st.info("👇 Presiona **Siguiente** para comenzar.")
 
-    # --- UNIDAD 1: OBSERVA (ANIMACIÓN GLOBAL) ---
     elif st.session_state.paso_modulo2 == 2:
-        # Fondo animado o Imagen de Convección Global
         img_base64 = get_img_as_base64("assets/images/mod2_intro.gif")
         if img_base64:
              st.markdown(f"""<style>.stApp {{background-image: url("data:image/gif;base64,{img_base64}"); background-size: cover; background-attachment: fixed;}}</style>""", unsafe_allow_html=True)
-        
-        st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 4px #000;'>AIRE CÁLIDO ASCIENDE<br>AIRE FRÍO DESCIENDE</h1>", unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div style='background-color: rgba(0,0,0,0.6); padding: 20px; border-radius: 10px; color: white; text-align: center; margin-top: 50px;'>
-            <h3>Todo comienza con el Sol ☀️</h3>
-            <p>La superficie absorbe radiación, se calienta y transfiere esa energía al aire.<br>
-            Al calentarse, el aire se expande, se vuelve más ligero y... ¡Despega!</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 4px #000;'>AIRE CÁLIDO ASCIENDE ⬆️<br>AIRE FRÍO DESCIENDE ⬇️</h1>", unsafe_allow_html=True)
 
-    # --- UNIDAD 2: EXPLIQUEMOS (ANALOGÍA OLLA) ---
+    # --- UNIDAD 2: EXPLIQUEMOS (PANTALLA RESTAURADA: EL SOL) ---
     elif st.session_state.paso_modulo2 == 3:
         st.header("2. Expliquemos lo observado")
-        st.subheader("La Física de la Convección")
+        st.subheader("Todo comienza con el Sol ☀️")
         
-        col1, col2 = st.columns(2)
-        with col1:
+        col_txt, col_img = st.columns([1, 1])
+        with col_txt:
             st.markdown("""
-            **Imagina una olla con agua hirviendo.** 🔥
+            La superficie de la Tierra absorbe la radiación solar y se calienta. 
+            Este calor se transfiere al aire que está en contacto directo con ella.
             
-            1. El fuego calienta el agua del fondo.
-            2. El agua caliente se expande (baja su densidad) y sube a la superficie.
-            3. Al llegar arriba, se enfría, se vuelve pesada y vuelve a bajar.
-            
-            **¡Esto mismo ocurre en la atmósfera!** Pero en lugar de una hornilla, tenemos la Tierra caliente.
+            **La Cadena de Eventos:**
+            1. El suelo se calienta.
+            2. Transfiere calor al aire (Conducción).
+            3. El aire se expande y sube (Convección).
             """)
-        with col2:
-            try: st.image("assets/images/mod2_olla.png", caption="Corrientes de convección", use_container_width=True)
-            except: st.warning("Falta imagen: mod2_olla.png")
+            if st.button("🔍 ¿Por qué sube? (Click aquí)"):
+                mostrar_densidad()
 
-    # --- UNIDAD 2: EXPLIQUEMOS (DETALLE DENSIDAD) ---
+        with col_img:
+            try: st.image("assets/images/mod2_sol_tierra.png", caption="Calentamiento Superficial", use_container_width=True)
+            except: st.warning("Falta imagen: mod2_sol_tierra.png")
+
+    # --- UNIDAD 2: EXPLIQUEMOS (3 BOTONES) ---
     elif st.session_state.paso_modulo2 == 4:
         st.header("2. Expliquemos lo observado")
-        st.subheader("¿Por qué flota el aire caliente?")
-        
-        st.info("""
-        💡 **Concepto Clave: Densidad**
-        
-        Cuando el aire se calienta, sus moléculas se mueven más rápido y se separan.
-        Ocupan más espacio con la misma cantidad de masa.
-        
-        **Mayor Temperatura ➡️ Menor Densidad ➡️ Flotabilidad (Ascenso)**
-        """)
-        
-        st.write("Es el mismo principio que hace volar a los globos aerostáticos.")
+        st.subheader("¿Cómo viaja el calor?")
+        st.markdown("Ya sabemos que empieza con el Sol, pero el proceso tiene 3 etapas. **Haz clic para verlas:**")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.image("https://cdn-icons-png.flaticon.com/512/169/169367.png", width=80)
+            if st.button("1. Radiación", use_container_width=True): st.session_state.popup_mecanismo = "radiacion"; st.rerun()
+        with col2:
+            st.image("https://cdn-icons-png.flaticon.com/512/1541/1541486.png", width=80)
+            if st.button("2. Conducción", use_container_width=True): st.session_state.popup_mecanismo = "conduccion"; st.rerun()
+        with col3:
+            st.image("https://cdn-icons-png.flaticon.com/512/950/950986.png", width=80)
+            if st.button("3. Convección", use_container_width=True): st.session_state.popup_mecanismo = "conveccion"; st.rerun()
 
-    # --- UNIDAD 2: EXPLIQUEMOS (MONZÓN INTRO) ---
+    # --- UNIDAD 2: EXPLIQUEMOS (ANALOGÍA OLLA) ---
     elif st.session_state.paso_modulo2 == 5:
         st.header("2. Expliquemos lo observado")
-        st.subheader("El Monzón de Norteamérica (NAM)")
-        
-        st.markdown("""
-        En verano, el desierto de México y el suroeste de EE.UU. se calientan muchísimo más que el océano.
-        
-        Esto crea una gigantesca "burbuja" de aire caliente que sube con fuerza, actuando como una aspiradora 
-        que atrae aire húmedo del mar.
-        """)
-        try: st.image("assets/images/mod2_monzon_mapa.png", caption="Sistema del Monzón de Norteamérica", use_container_width=True)
-        except: st.warning("Falta imagen: mod2_monzon_mapa.png")
+        st.subheader("La Analogía de la Olla")
+        st.markdown("La convección es el movimiento del fluido, tal como ocurre en tu cocina al hervir agua.")
+        col_olla, col_atm = st.columns(2)
+        with col_olla:
+            try: st.image("assets/images/mod2_olla.png", caption="Olla hirviendo", use_container_width=True)
+            except: st.warning("Falta mod2_olla.png")
+        with col_atm:
+            st.info("**En la atmósfera:**\nEl suelo caliente actúa como la estufa, haciendo que el aire suba y cree celdas de circulación.")
 
-    # --- UNIDAD 3: ENTENDIENDO (DATOS SATELITALES) ---
+    # --- UNIDAD 2: EXPLIQUEMOS (PUENTE/CLAVE) ---
     elif st.session_state.paso_modulo2 == 6:
-        st.header("3. Entendiendo el fenómeno")
-        st.subheader("Evidencia Satelital: La Chimenea de Humedad")
-        
-        st.markdown("""
-        ¿Cómo sabemos que esto ocurre? Los satélites **ACE-FTS y MLS** nos permiten ver el vapor de agua (H₂O).
-        
-        Observa el siguiente gráfico real. Muestra cómo una columna de humedad inyecta agua desde la superficie 
-        hasta lo más alto de la atmósfera durante el monzón.
-        """)
-        
-        # Aquí iría tu gráfico de Matplotlib/Plotly con datos reales
-        try: st.image("assets/images/mod2_perfil_h2o.png", caption="Perfil vertical de H2O (Datos Reales)", use_container_width=True)
-        except: st.warning("Falta imagen: mod2_perfil_h2o.png")
+        st.header("2. Expliquemos lo observado")
+        st.subheader("¿Por qué la Convección es la Clave? 🔑")
+        col_txt, col_icon = st.columns([2, 1])
+        with col_txt:
+            st.markdown("""
+            **Es el 'Ascensor' de la Atmósfera.**
+            Es el único mecanismo capaz de elevar toneladas de vapor de agua y contaminantes desde el suelo hasta la estratosfera.
+            Sin convección, no tendríamos nubes, tormentas ni el ciclo del agua tal como lo conocemos.
+            """)
+        with col_icon:
+            st.image("https://cdn-icons-png.flaticon.com/512/5664/5664879.png", width=150)
 
-    # --- UNIDAD 3: ENTENDIENDO (CONCLUSIÓN SATELITAL) ---
+    # ==========================================================
+    # --- UNIDAD 3: ENTENDIENDO EL FENÓMENO ---
+    # ==========================================================
+
+    # PANTALLA 1: DEFINICIÓN DE CONVECCIÓN
     elif st.session_state.paso_modulo2 == 7:
         st.header("3. Entendiendo el fenómeno")
-        st.success("""
-        **Lo que nos dicen los datos:**
-        
-        Esa "mancha" roja que sube en el gráfico anterior confirma la teoría: 
-        la convección profunda es capaz de hidratar la estratosfera, superando la barrera del frío.
-        """)
-        st.write("Ahora es tu turno de experimentar con el calor.")
+        st.subheader("Concepto 1: La Convección Atmosférica")
+        col_def, col_img = st.columns(2)
+        with col_def:
+            st.markdown("""
+            **Definición:**
+            Es el transporte vertical de calor y masa en un fluido.
+            En la atmósfera, ocurre cuando una burbuja de aire se calienta más que su entorno, 
+            se vuelve menos densa y "flota" hacia arriba.
+            """)
+        with col_img:
+            try: st.image("assets/images/mod2_def_conveccion.png", caption="Esquema de Convección", use_container_width=True)
+            except: st.info("[Imagen: Esquema general]")
 
-    # --- UNIDAD 4: HORA DE EXPLORAR (SIMULADOR) ---
+    # PANTALLA 2: DEFINICIÓN DE CONVECCIÓN PROFUNDA
     elif st.session_state.paso_modulo2 == 8:
+        st.header("3. Entendiendo el fenómeno")
+        st.subheader("Concepto 2: Convección Profunda")
+        col_def, col_img = st.columns(2)
+        with col_def:
+            st.markdown("""
+            **Definición:**
+            Es un tipo de convección muy intensa y potente.
+            Aquí, el aire asciende tan rápido y tan alto que llega hasta el techo de la troposfera (la tropopausa). 
+            """)
+        with col_img:
+            try: st.image("assets/images/mod2_def_profunda.png", caption="Nubes de desarrollo vertical", use_container_width=True)
+            except: st.info("[Imagen: Nube Cumulonimbus]")
+
+    # PANTALLA 3: EL MONZÓN (HUB DE NAVEGACIÓN)
+    elif st.session_state.paso_modulo2 == 9:
+        st.header("3. Entendiendo el fenómeno")
+        
+        # --- VISTA PRINCIPAL ---
+        if st.session_state.vista_monzon == 'intro':
+            st.subheader("Concepto 3: El Monzón")
+            col_def, col_img = st.columns([1, 1])
+            with col_def:
+                st.markdown("""
+                **Definición:**
+                Es un cambio estacional en la dirección del viento causado por diferencias de temperatura entre la tierra y el mar.
+                En verano, la tierra se calienta más, creando baja presión que atrae humedad.
+                """)
+                st.info("Explora los ejemplos:")
+            with col_img:
+                try: st.image("assets/images/mod2_def_monzon.png", caption="Esquema Monzónico", use_container_width=True)
+                except: st.info("[Imagen: Esquema Tierra vs Mar]")
+
+            st.divider()
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                st.markdown("##### Caso A: Norteamérica")
+                if st.button("🌎 Ver Monzón de Norteamérica", use_container_width=True):
+                    st.session_state.vista_monzon = 'nam'; st.rerun()
+            with col_btn2:
+                st.markdown("##### Caso B: Asia / Otro")
+                if st.button("🌏 Ver Monzón Asiático", use_container_width=True):
+                    st.session_state.vista_monzon = 'asia'; st.rerun()
+
+        # --- SUB-PANTALLAS ---
+        elif st.session_state.vista_monzon == 'nam':
+            st.subheader("El Monzón de Norteamérica (NAM)")
+            st.markdown("El calor del desierto impulsa una convección profunda que transporta humedad desde el Golfo de California.")
+            try: st.image("assets/images/mod2_monzon_nam.png", caption="Mapa del NAM", use_container_width=True)
+            except: st.warning("Falta imagen")
+            if st.button("⬅️ Volver a definiciones"): st.session_state.vista_monzon = 'intro'; st.rerun()
+
+        elif st.session_state.vista_monzon == 'asia':
+            st.subheader("El Monzón Asiático")
+            st.markdown("El sistema monzónico más grande del mundo. Genera lluvias torrenciales en la India y el Sudeste Asiático.")
+            try: st.image("assets/images/mod2_monzon_asia.png", caption="Mapa Asia", use_container_width=True)
+            except: st.warning("Falta imagen")
+            if st.button("⬅️ Volver a definiciones"): st.session_state.vista_monzon = 'intro'; st.rerun()
+
+    # --- UNIDAD 4: HORA DE EXPLORAR ---
+    elif st.session_state.paso_modulo2 == 10:
         st.header("4. Hora de explorar")
         st.markdown("### Laboratorio: Formas y Cambios de Energía")
-        
-        st.info("""
-        **Instrucciones:**
-        1. Dentro del simulador, ve a la pestaña **"Sistemas"** (la segunda opción).
-        2. Arrastra el símbolo de **Energía** (la 'E') para activarlo.
-        3. Coloca un calentador debajo del recipiente con agua.
-        4. **Observa:** ¿Ves los bloques de energía roja ('calor') subiendo? Eso es convección.
-        """)
-        
-        components.iframe(URL_ENERGIA, height=600)
+        st.markdown("**Tu Misión:** Activa 'Símbolos de Energía' y calienta el agua para ver la convección.")
+        components.iframe(URL_ENERGIA, height=650)
 
     # --- UNIDAD 5: QUIZ ---
-    elif st.session_state.paso_modulo2 == 9:
+    elif st.session_state.paso_modulo2 == 11:
         st.header("5. Pon a prueba tu conocimiento")
-        st.markdown("Demuestra que eres un experto en termodinámica atmosférica.")
-        st.write("---")
-        
         with st.form("quiz_m2_form"):
-            p1 = st.radio("1. ¿Cuál es el motor principal que impulsa el ascenso del aire?", 
-                          ["La gravedad", "El calor (energía solar)", "La rotación de la tierra"], index=None)
+            p1 = st.radio("1. Mecanismo que mueve calor por contacto:", ["Radiación", "Conducción", "Convección"], index=None)
             st.write("")
-            p2 = st.radio("2. ¿Qué le pasa a la densidad del aire cuando se calienta?", 
-                          ["Aumenta (se hace más pesado)", "Disminuye (se hace más ligero)", "Se queda igual"], index=None)
+            p2 = st.radio("2. ¿Qué caracteriza a la convección profunda?", ["Solo ocurre en el suelo", "Llega hasta la tropopausa", "Es horizontal"], index=None)
             st.write("")
-            p3 = st.radio("3. El Monzón de Norteamérica es un ejemplo de...", 
-                          ["Convección a gran escala impulsada por el calentamiento del continente", "Enfriamiento del océano", "Vientos polares"], index=None)
-            st.write("")
+            p3 = st.radio("3. El Monzón se produce por...", ["Diferencia térmica Tierra-Mar", "Fases Lunares", "Mareas"], index=None)
             
             submitted = st.form_submit_button("Enviar Respuestas")
-            
             if submitted:
                 puntaje = 0
-                if p1 == "El calor (energía solar)": puntaje +=1; st.success("1. ¡Correcto! El sol es la fuente de energía.")
-                else: st.error("1. Incorrecto. Recuerda que el calor hace expandir el gas.")
+                if p1 == "Conducción": puntaje +=1
+                if p2 == "Llega hasta la tropopausa": puntaje +=1
+                if p3 == "Diferencia térmica Tierra-Mar": puntaje +=1
                 
-                if p2 == "Disminuye (se hace más ligero)": puntaje +=1; st.success("2. ¡Correcto! Por eso asciende.")
-                else: st.error("2. Incorrecto. El calor separa las moléculas, bajando la densidad.")
-                
-                if p3 == "Convección a gran escala impulsada por el calentamiento del continente": puntaje +=1; st.success("3. ¡Correcto! Es una gigantesca chimenea térmica.")
-                else: st.error("3. Incorrecto.")
-                
-                # Guardar en sesión
                 st.session_state.resultados_quiz_m2 = {"Puntaje": puntaje}
-                
-                if puntaje == 3: st.balloons(); st.markdown("### 🎉 ¡Excelente! (3/3)")
-                else: st.markdown(f"### Tu puntaje: {puntaje}/3")
+                if puntaje == 3: st.balloons(); st.success("¡Perfecto! (3/3)")
+                else: st.warning(f"Tu puntaje: {puntaje}/3")
 
     # --- UNIDAD 6: ENCUESTA ---
-    elif st.session_state.paso_modulo2 == 10:
+    elif st.session_state.paso_modulo2 == 12:
         st.header("6. Encuesta de satisfacción")
-        st.write("Ayúdanos a mejorar el Módulo 2.")
         
+        # 1. Formulario
         with st.form("encuesta_m2"):
             usuario = st.text_input("Nombre / Código")
-            claridad = st.slider("Claridad de la explicación de Convección", 1, 5, 5)
-            simulador = st.slider("Utilidad del Simulador de Energía", 1, 5, 5)
+            claridad = st.slider("Claridad", 1, 5, 5)
             comentarios = st.text_area("Comentarios")
-            
-            btn_enviar = st.form_submit_button("Finalizar Módulo 2 💾", type="primary")
+            btn_enviar = st.form_submit_button("Generar Reporte 💾", type="primary")
         
+        # 2. Lógica post-envío (Botón descarga fuera del form)
         if btn_enviar:
             if not usuario:
-                st.error("Por favor ingresa tu nombre.")
+                st.error("Ingresa tu nombre.")
             else:
-                # Recuperar nota quiz
                 quiz_data = st.session_state.resultados_quiz_m2
-                nota = quiz_data["Puntaje"] if quiz_data else 0
-                
-                # Crear DataFrame
-                datos = {
-                    "Estudiante": [usuario],
-                    "Módulo": ["2 - Termodinámica"],
-                    "Nota Quiz": [nota],
-                    "Eval Claridad": [claridad],
-                    "Eval Simulador": [simulador],
-                    "Comentarios": [comentarios],
-                    "Fecha": [pd.Timestamp.now()]
-                }
+                nota = quiz_data["Puntaje"] if quiz_data else "N/A"
+                datos = {"Estudiante": [usuario], "Módulo": ["2"], "Nota": [nota], "Claridad": [claridad], "Comentarios": [comentarios], "Fecha": [pd.Timestamp.now()]}
                 df = pd.DataFrame(datos)
                 csv = df.to_csv(index=False).encode('utf-8')
-                
-                st.success("¡Datos guardados!")
-                st.balloons()
-                st.download_button("Descargar Reporte Módulo 2", csv, f"Reporte_Mod2_{usuario}.csv", "text/csv")
+                st.success("¡Gracias!"); st.balloons()
+                st.download_button("Descargar Reporte", csv, f"Reporte_Mod2_{usuario}.csv", "text/csv")
 
-    # --- FOOTER NAVEGACIÓN ---
+    # --- FOOTER ---
     st.write("")
     st.divider()
     col_prev, col_vacia, col_next = st.columns([1, 4, 1])
     
     with col_prev:
-        if st.session_state.paso_modulo2 > 1:
-            st.button("⬅️ Atrás", on_click=anterior)
-    
+        mostrar_atras = True
+        if st.session_state.paso_modulo2 == 9 and st.session_state.vista_monzon != 'intro':
+            mostrar_atras = False
+        
+        if st.session_state.paso_modulo2 > 1 and mostrar_atras:
+            st.button("⬅️ Atrás", on_click=anterior, key="atras_m2")
+            
     with col_next:
-        if st.session_state.paso_modulo2 < 10:
-            st.button("Siguiente ➡️", on_click=siguiente)
+        mostrar_siguiente = True
+        if st.session_state.paso_modulo2 == 9 and st.session_state.vista_monzon != 'intro':
+            mostrar_siguiente = False
+            
+        if st.session_state.paso_modulo2 < 12 and mostrar_siguiente:
+            st.button("Siguiente ➡️", on_click=siguiente, key="sig_m2")
