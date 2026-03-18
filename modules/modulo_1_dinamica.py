@@ -244,12 +244,15 @@ def render():
                 if st.button("🌊 Bajo Presión", use_container_width=True):
                     st.session_state.view_simulador = 'presion'; st.rerun()
         elif st.session_state.view_simulador == 'materia':
+            st.info("Observa cómo se comportan las partículas al cambiar la temperatura. ¿Qué le pasa al 'aire' cuando se calienta?")
             components.iframe(URL_MATERIA, height=600)
             if st.button("⬅️ Volver al menú"): st.session_state.view_simulador = 'menu'; st.rerun()
         elif st.session_state.view_simulador == 'gases':
+            st.info("Explora la relación entre la presión y la temperatura en un gas como el aire.")
             components.iframe(URL_GASES, height=600)
             if st.button("⬅️ Volver al menú"): st.session_state.view_simulador = 'menu'; st.rerun()
         elif st.session_state.view_simulador == 'presion':
+            st.info("Descubre cómo cambia la presión con la altitud en un fluido.")
             components.iframe(URL_PRESION, height=600)
             if st.button("⬅️ Volver al menú"): st.session_state.view_simulador = 'menu'; st.rerun()
 
