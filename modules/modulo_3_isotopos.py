@@ -5,13 +5,14 @@ import base64
 import os
 
 # --- CONFIGURACIÓN DE LAS UNIDADES ---
+# Actualizado a 11 pasos totales para incluir el concepto de Fraccionamiento
 UNIDADES = {
-    "1. Observemos el fenómeno": 1,
-    "2. Expliquemos lo observado": 3,
-    "3. Entendiendo el fenómeno": 6, 
-    "4. Hora de explorar": 7, 
-    "5. Pon a prueba tu conocimiento": 8,
-    "6. Encuesta de satisfacción": 9
+    "1. Observemos el fenómeno": 1,  # Pasos 1-3
+    "2. Expliquemos lo observado": 4, # Pasos 4-7 (Se añade Fraccionamiento)
+    "3. Entendiendo el fenómeno": 8, 
+    "4. Hora de explorar": 9, 
+    "5. Pon a prueba tu conocimiento": 10,
+    "6. Encuesta de satisfacción": 11
 }
 
 # --- FUNCIÓN IMÁGENES ---
@@ -23,43 +24,34 @@ def get_img_as_base64(file_path):
     except Exception:
         return ""
 
-# --- FUNCIÓN PARA CARGAR TU HTML PERSONALIZADO ---
+# --- FUNCIÓN PARA CARGAR EL SIMULADOR HTML PERSONALIZADO ---
 def cargar_simulador_html():
     ruta_html = "assets/html/simulador_isotopos.html"
     
     if os.path.exists(ruta_html):
         with open(ruta_html, 'r', encoding='utf-8') as f:
             html_content = f.read()
-        # Renderizamos el HTML con altura suficiente y scroll
         components.html(html_content, height=800, scrolling=True)
     else:
         st.error(f"⚠️ No se encontró el archivo del simulador en: {ruta_html}")
         st.info("Por favor sube tu archivo HTML a la carpeta 'assets/html/' con el nombre 'simulador_isotopos.html'")
 
 # --- POP-UPS / DIÁLOGOS ---
-# --- POP-UPS / DIÁLOGOS ---
 @st.dialog("H2O vs HDO")
 def mostrar_moleculas():
     st.subheader("La diferencia está en el núcleo")
-    
-    # --- AQUÍ HABILITAMOS LA IMAGEN ---
     try: 
-        # Asegúrate de subir esta imagen a tu carpeta assets/images/
         st.image("assets/images/mod3_detalle_nucleo.png", use_container_width=True)
     except: 
-        st.info("💡 [Espacio para imagen: Sube 'mod3_detalle_nucleo.png' a assets/images/]")
-        
-    st.divider() # Una línea sutil para separar la imagen del texto
-    
+        st.info("💡 [Sube 'mod3_detalle_nucleo.png' a assets/images/]")
+    st.divider()
     col1, col2 = st.columns(2)
     with col1:
         st.markdown("### H₂O (Ligera)")
         st.write("Hidrógeno común. Masa: **18 g/mol**.")
-        st.write("Es la más abundante.")
     with col2:
         st.markdown("### HDO (Semi-pesada)")
-        st.write("Un Hidrógeno es reemplazado por **Deuterio** (tiene un neutrón extra).")
-        st.write("Masa: **19 g/mol**.")
+        st.write("Un Hidrógeno es reemplazado por **Deuterio**. Masa: **19 g/mol**.")
 
 def render():
     # --- ESTADO INICIAL ---
@@ -68,7 +60,6 @@ def render():
     if 'resultados_quiz_m3' not in st.session_state:
         st.session_state.resultados_quiz_m3 = None
 
-    # Navegación
     def ir_a_unidad():
         if st.session_state.selector_unidad_m3 in UNIDADES:
             st.session_state.paso_modulo3 = UNIDADES[st.session_state.selector_unidad_m3]
@@ -95,187 +86,133 @@ def render():
         on_change=ir_a_unidad
     )
 
-    # ==========================================
-    # DESARROLLO DEL CONTENIDO
-    # ==========================================
+    # --- CONTENIDO ---
 
-    # --- UNIDAD 1: OBSERVA (INTRODUCCIÓN) ---
+    # PASO 1: INTRODUCCIÓN
     if st.session_state.paso_modulo3 == 1:
         st.title("MÓDULO 3: LA HUELLA ISOTÓPICA")
-        st.subheader("Dinámica de Trazadores Atmosféricos")
-        
+        st.subheader("Dinámica de Trazadores Atmosféricos Y PROCESOS DE FRACCIONAMIENTO")
         st.markdown("""
-        **Cambiamos de escala:** Dejaremos de ver la atmósfera solo como un fluido gigante para verla como un **laboratorio químico**.
+        En los módulos anteriores, observamos cómo el calor mueve masas gigantescas de aire a escala planetaria. Ahora, cambiaremos nuestra
+        escala de observación: pasaremos de los kilómetros a los ángstroms.
         
-        Pasaremos de los kilómetros a los ángstroms para entender cómo la composición del agua cambia mientras viaja por las nubes.
-        Utilizaremos los isótopos como "espías" que nos cuentan la historia térmica del aire.
+        Dejaremos de ver la atmosfera solo como un fluido en movimiento para entenderla como un laboratorio de destilación. Utilizaremos la 
+        composición química del agua como una 'caja negra' que registra la historia térmica de las nubes.
         """)
-        st.info("👇 Presiona **Siguiente** para entrar al laboratorio.")
 
-    # --- UNIDAD 1: OBSERVA (LOS ISOTOPÓLOGOS) ---
+    # PASO 2: ANIMACIÓN DE TRANSICIÓN
     elif st.session_state.paso_modulo3 == 2:
+        img_base64 = get_img_as_base64("assets/images/mod3_fondo_animado.gif")
+        if img_base64:
+             st.markdown(f"<style>.stApp {{background-image: url('data:image/gif;base64,{img_base64}'); background-size: cover; background-attachment: fixed;}}</style>", unsafe_allow_html=True)
+        st.markdown("<br><br><h1 style='text-align: center; color: white; text-shadow: 3px 3px 5px #000;'>MÓDULO 3: LA HUELLA ISOTÓPICA - DINÁMICA DE TRAZADORES ATMOSFÉRICOS Y PROCESOS DE FRACCIONAMIENTO</h1>", unsafe_allow_html=True)
+        st.markdown("<div style='background-color: rgba(0, 0, 0, 0.6); padding: 25px; border-radius: 15px; color: white; text-align: center;'><h3>En este módulo, dejaremos de ver el aire solo como un gas que se mueve, y empezaremos a analizar su composición química., la atmósfera actúa como un laboratorio de destilación. Cada proceso de condensación deja una firma química única.</h3></div>", unsafe_allow_html=True)
+
+    # PASO 3: ISOTOPÓLOGOS
+    elif st.session_state.paso_modulo3 == 3:
         st.header("1. Observemos el fenómeno")
         st.subheader("No toda el agua es igual 💧")
-        
-        st.markdown("""
-        El agua común ($H_2O$) tiene una "hermana gemela" un poco más pesada llamada **HDO**.
-        La diferencia es mínima pero fundamental: un neutrón extra.
-        """)
-        
-        try: st.image("assets/images/mod3_moleculas.png", caption="Comparación molecular", use_container_width=True)
+        st.markdown("Existen variaciones moleculares llamadas **Isotopólogos**. El más relevante para rastrear masas de aire es el **HDO**.")
+        try: st.image("assets/images/mod3_moleculas.png", caption="H2O vs HDO", use_container_width=True)
         except: st.warning("Falta imagen: mod3_moleculas.png")
-        
-        if st.button("🔍 Ver detalles moleculares"):
-            mostrar_moleculas()
+        if st.button("🔍 Ver detalles moleculares"): mostrar_moleculas()
 
-    # --- UNIDAD 2: EXPLIQUEMOS (LA PREGUNTA CLAVE) ---
-    elif st.session_state.paso_modulo3 == 3:
-        st.header("2. Expliquemos lo observado")
-        st.subheader("La carrera de la condensación")
-        
-        col_txt, col_img = st.columns([1,1])
-        with col_txt:
-            st.markdown("""
-            Si lanzamos vapor de $H_2O$ y HDO dentro de una nube que sube... **¿Cuál cae primero como lluvia?**
-            
-            La respuesta es el **HDO** (el pesado).
-            
-            **¿Por qué?** No solo por gravedad, sino por la **Presión de Vapor de Saturación**.
-            El enlace del HDO es más fuerte, por lo que "prefiere" ser líquido. Requiere menos energía para condensarse que el agua normal.
-            """)
-        with col_img:
-            try: st.image("assets/images/mod3_nube_lluvia.png", caption="El HDO cae preferencialmente", use_container_width=True)
-            except: st.warning("Falta imagen: mod3_nube_lluvia.png")
-
-    # --- UNIDAD 2: EXPLIQUEMOS (MODELO RAYLEIGH) ---
+    # PASO 4: CARRERA DE CONDENSACIÓN
     elif st.session_state.paso_modulo3 == 4:
         st.header("2. Expliquemos lo observado")
-        st.subheader("El Modelo de Destilación de Rayleigh")
-        
-        st.markdown("Para entender esto matemáticamente, comparamos dos sistemas:")
-        
-        tab1, tab2 = st.tabs(["1. Sistema Cerrado (Equilibrio)", "2. Sistema Abierto (Rayleigh)"])
-        
-        with tab1:
-            st.info("""
-            **La lluvia se queda con la nube.**
-            El líquido formado viaja junto con el vapor. Mantienen contacto y se intercambian moléculas.
-            *Resultado:* El vapor NO se empobrece tanto de HDO.
+        st.subheader("La pregunta clave")
+        col_txt, col_img = st.columns(2)
+        with col_txt:
+            st.markdown("""
+            Si lanzamos ambas moleculas (H₂O y HDO) DENTRO DE UNA NUBE CONVECTIVA QUE ASCIENDE RAPIDAMENTE...
+                         
+            ¿Cuál de las dos crees que "caerá" primero en forma de lluvia y porqué?
             """)
-            
-        with tab2:
-            st.error("""
-            **La lluvia abandona el sistema.**
-            Apenas se forma la gota, cae y se va. 
-            *Resultado:* La nube pierde masa constantemente. El vapor que queda se vuelve "pobre" en HDO muy rápido.
-            **¡Así funciona la atmósfera real!**
-            """)
-        
-        try: st.image("assets/images/mod3_rayleigh_esquema.png", caption="Comparación de sistemas", use_container_width=True)
-        except: st.warning("Falta imagen: mod3_rayleigh_esquema.png")
+        with col_img:
+            try: st.image("assets/images/mod3_nube_lluvia.png", caption="Preferencia de condensación")
+            except: st.warning("Falta imagen: mod3_nube_lluvia.png")
 
-    # --- UNIDAD 2: EXPLIQUEMOS (ECUACIÓN Y GRÁFICA) ---
+    # PASO 5: FRACCIONAMIENTO ISOTÓPICO (NUEVO)
     elif st.session_state.paso_modulo3 == 5:
         st.header("2. Expliquemos lo observado")
-        st.subheader("La Matemática del Agotamiento")
-        
-        st.latex(r"R = R_0 \cdot f^{(\alpha - 1)}")
-        
+        st.subheader("No es solo peso, es Energía")
         st.markdown("""
-        Esta ecuación predice cuánto HDO queda ($R$) basándose en cuánto vapor original queda ($f$).
+        Este "reparto" desigual de moléculas entre el vapor y el líquido se conoce como **Fraccionamiento**.
         
-        A medida que subimos (aumenta la altura), $f$ disminuye, y el HDO desaparece drásticamente.
+        Debido a que el HDO prefiere la fase líquida, la lluvia resultante estará enriquecida en isótopos pesados, 
+        mientras que el vapor de agua que queda en la nube se volverá cada vez más "pobre" o ligero.
         """)
-        try: st.image("assets/images/mod3_grafica_ideal.png", caption="Perfil Ideal de Agotamiento Isotópico", use_container_width=True)
-        except: st.warning("Falta imagen: mod3_grafica_ideal.png")
+        col_f, col_icon = st.columns([2, 1])
+        with col_f:
+            st.info("""
+            **El Factor de Fraccionamiento ($\\alpha$):**
+            Es la medida de esta preferencia. Define la relación entre la abundancia isotópica en el líquido respecto al vapor. 
+            Si $\\alpha > 1$, el isótopo pesado prefiere condensar.
+            """)
+        with col_icon:
+            st.image("https://cdn-icons-png.flaticon.com/512/1624/1624388.png", width=120)
 
-    # --- UNIDAD 3: ENTENDIENDO (DATOS REALES) ---
+    # PASO 6: MODELO RAYLEIGH (DESPLAZADO)
     elif st.session_state.paso_modulo3 == 6:
+        st.header("2. Expliquemos lo observado")
+        st.subheader("El Modelo de Destilación de Rayleigh")
+        tab1, tab2 = st.tabs(["1. Sistema Cerrado (Equilibrio)", "2. Sistema Abierto (Rayleigh)"])
+        with tab1: st.info("La lluvia se queda en contacto con la nube. El intercambio continúa.")
+        with tab2: st.error("La lluvia cae y se elimina del sistema al instante. El vapor se agota rápidamente.")
+        try: st.image("assets/images/mod3_rayleigh_esquema.png", use_container_width=True)
+        except: st.warning("Falta imagen: mod3_rayleigh_esquema.png")
+
+    # PASO 7: MATEMÁTICA (DESPLAZADO)
+    elif st.session_state.paso_modulo3 == 7:
+        st.header("2. Expliquemos lo observado")
+        st.subheader("La Matemática del Agotamiento")
+        st.latex(r"R = R_0 \cdot f^{(\alpha - 1)}")
+        st.markdown("La relación isotópica ($R$) depende de la fracción de vapor restante ($f$). A mayor altura, menos vapor queda y más 'agotada' está la huella química.")
+        try: st.image("assets/images/mod3_grafica_ideal.png", use_container_width=True)
+        except: st.warning("Falta imagen")
+
+    # PASO 8: DATOS REALES (DESPLAZADO)
+    elif st.session_state.paso_modulo3 == 8:
         st.header("3. Entendiendo el fenómeno")
         st.subheader("Observando la Realidad (Datos ACE-FTS)")
-        
-        st.markdown("""
-        Estas gráficas muestran datos reales de la atmósfera tropical. 
-        Mira la gráfica de la derecha ($\delta D$).
-        """)
-        
-        try: st.image("assets/images/mod3_perfiles_ace.png", caption="Perfiles Verticales Reales (H2O, HDO y Delta-D)", use_container_width=True)
-        except: st.warning("Falta imagen: mod3_perfiles_ace.png")
-        
-        st.success("""
-        **Conclusión:**
-        La curva roja se mueve a la izquierda (se agota) hasta los 16 km, tal como predice Rayleigh.
-        
-        ⚠️ **¡Ojo!** Arriba de 16 km, la curva se devuelve a la derecha (se enriquece). ¿Por qué? 
-        Eso es un misterio que resolveremos en el próximo módulo.
-        """)
+        try: st.image("assets/images/mod3_perfiles_ace.png", use_container_width=True)
+        except: st.warning("Falta imagen")
+        st.success("El modelo predice el agotamiento hasta los 16km. Lo que ocurre después desafía la destilación simple.")
 
-    # --- UNIDAD 4: HORA DE EXPLORAR (HTML PERSONALIZADO) ---
-    elif st.session_state.paso_modulo3 == 7:
+    # PASO 9: SIMULADOR
+    elif st.session_state.paso_modulo3 == 9:
         st.header("4. Hora de explorar")
-        st.markdown("### Simulador de Fraccionamiento Isotópico")
-        st.markdown("""
-        Experimenta con una parcela de aire. Observa cómo cambia la proporción de moléculas azules ($H_2O$) 
-        y rojas (HDO) a medida que la nube asciende y llueve.
-        """)
-        
-        # --- AQUÍ CARGAMOS TU ARCHIVO HTML ---
         cargar_simulador_html()
 
-    # --- UNIDAD 5: QUIZ ---
-    elif st.session_state.paso_modulo3 == 8:
+    # PASO 10: QUIZ
+    elif st.session_state.paso_modulo3 == 10:
         st.header("5. Pon a prueba tu conocimiento")
         with st.form("quiz_m3"):
-            st.write("Selecciona la respuesta correcta:")
-            
-            q1 = st.radio("1. ¿Qué diferencia principal tiene el HDO respecto al agua común?", 
-                          ["Tiene dos oxígenos", "Tiene un neutrón extra (Deuterio)", "Es un gas noble"], index=None)
-            
-            q2 = st.radio("2. En el Modelo de Rayleigh (Sistema Abierto), ¿qué pasa con la lluvia?", 
-                          ["Se queda en la nube", "Se evapora inmediatamente", "Es removida del sistema al instante"], index=None)
-            
-            q3 = st.radio("3. ¿Qué le pasa al vapor de agua remanente cuando la nube sube?", 
-                          ["Se enriquece de HDO", "Se empobrece (pierde) HDO", "Mantiene su composición igual"], index=None)
-            
-            submitted = st.form_submit_button("Enviar Respuestas")
-            if submitted:
+            q1 = st.radio("1. ¿Qué es el fraccionamiento isotópico?", ["La ruptura de moléculas", "El reparto desigual de isótopos en un cambio de fase"], index=None)
+            q2 = st.radio("2. Si alpha es mayor a 1, el HDO...", ["Prefiere ser vapor", "Prefiere ser líquido"], index=None)
+            q3 = st.radio("3. ¿Cuál modelo describe mejor la atmósfera real donde la lluvia cae?", ["Equilibrio", "Rayleigh"], index=None)
+            if st.form_submit_button("Enviar"):
                 pts = 0
-                if q1 == "Tiene un neutrón extra (Deuterio)": pts += 1
-                if q2 == "Es removida del sistema al instante": pts += 1
-                if q3 == "Se empobrece (pierde) HDO": pts += 1
-                
+                if q1 == "El reparto desigual de isótopos en un cambio de fase": pts += 1
+                if q2 == "Prefiere ser líquido": pts += 1
+                if q3 == "Rayleigh": pts += 1
                 st.session_state.resultados_quiz_m3 = {"Puntaje": pts}
-                if pts == 3: st.balloons(); st.success("¡Excelente! (3/3)")
-                else: st.warning(f"Puntaje: {pts}/3")
+                st.info(f"Resultado: {pts}/3")
 
-    # --- UNIDAD 6: ENCUESTA ---
-    elif st.session_state.paso_modulo3 == 9:
+    # PASO 11: REPORTE
+    elif st.session_state.paso_modulo3 == 11:
         st.header("6. Encuesta de satisfacción")
         with st.form("encuesta_m3"):
-            user = st.text_input("Nombre / Código")
-            rating = st.slider("Calificación Módulo 3", 1, 5, 5)
-            comments = st.text_area("Comentarios sobre el tema de Isótopos")
-            send = st.form_submit_button("Generar Reporte 💾", type="primary")
-        
-        if send:
-            if not user: st.error("Falta nombre")
-            else:
-                q_data = st.session_state.resultados_quiz_m3
-                nota = q_data["Puntaje"] if q_data else 0
-                df = pd.DataFrame({
-                    "Estudiante": [user], "Módulo": ["3-Isótopos"], "Nota": [nota], 
-                    "Valoración": [rating], "Comentarios": [comments], "Fecha": [pd.Timestamp.now()]
-                })
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.success("¡Datos guardados!")
-                st.balloons()
-                st.download_button("Descargar Reporte", csv, f"Reporte_Mod3_{user}.csv", "text/csv")
+            user = st.text_input("Nombre")
+            rating = st.slider("Valoración", 1, 5, 5)
+            if st.form_submit_button("Finalizar y Reportar"):
+                df = pd.DataFrame({"Estudiante": [user], "Módulo": ["3"], "Valoración": [rating]})
+                st.download_button("Descargar Reporte", df.to_csv(index=False).encode('utf-8'), f"Reporte_M3_{user}.csv")
 
-    # --- FOOTER ---
-    st.write("")
+    # FOOTER
     st.divider()
-    col_prev, col_vacia, col_next = st.columns([1, 4, 1])
+    col_prev, col_next = st.columns([1, 1])
     with col_prev:
-        if st.session_state.paso_modulo3 > 1: st.button("⬅️ Atrás", on_click=anterior)
+        if st.session_state.paso_modulo3 > 1: st.button("⬅️ Atrás", on_click=anterior, key="btn_atras_m3")
     with col_next:
-        if st.session_state.paso_modulo3 < 9: st.button("Siguiente ➡️", on_click=siguiente)
+        if st.session_state.paso_modulo3 < 11: st.button("Siguiente ➡️", on_click=siguiente, key="btn_sig_m3")
