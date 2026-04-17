@@ -3,6 +3,7 @@ import streamlit as st
 from modules import modulo_1_dinamica
 from modules import modulo_2_termo
 from modules import modulo_3_isotopos
+from modules import modulo_4_trazador
 
 st.set_page_config(page_title="MOVEA - Física Atmosférica", layout="wide")
 
@@ -13,7 +14,12 @@ st.sidebar.title("Navegación General")
 # Menú Principal
 opcion_global = st.sidebar.radio(
     "Selecciona un Módulo:", 
-    ["🏠 Inicio", "🌊 Módulo 1: El Gran Río", "🔥 Módulo 2: Aire que se Eleva", "⚗️ Módulo 3: La Huella Isotópica"] # <--- NUEVA OPCIÓN
+    ["🏠 Inicio", 
+     "🌊 Módulo 1: El Gran Río", 
+     "🔥 Módulo 2: Aire que se Eleva", 
+     "⚗️ Módulo 3: La Huella Isotópica",
+     "🕵️‍♂️ Módulo 4: El Veredicto del Trazador"
+     ] # <--- NUEVA OPCIÓN
 )
 
 # --- ENRUTAMIENTO ---
@@ -31,13 +37,15 @@ if opcion_global == "🏠 Inicio":
     **Selecciona un módulo en el menú de la izquierda para comenzar.**
     """)
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.info("🌊 **Módulo 1:** Dinámica de Fluidos y Circulación Global.")
     with col2:
         st.warning("🔥 **Módulo 2:** Termodinámica y Convección (El aire que sube).")
     with col3:
         st.success("⚗️ **Módulo 3:** Dinámica de Trazadores Atmosfericos y Fraccionamiento Isotopico (La Huella Isotópica).")
+    with col4:
+        st.info("🕵️‍♂️ **Módulo 4:** Dinámica de la Tropopausa (El veredicto del Trazador).")
 
 elif opcion_global == "🌊 Módulo 1: El Gran Río":
     modulo_1_dinamica.render()
@@ -47,3 +55,6 @@ elif opcion_global == "🔥 Módulo 2: Aire que se Eleva":
 
 elif opcion_global == "⚗️ Módulo 3: La Huella Isotópica":
     modulo_3_isotopos.render()
+
+elif opcion_global == "🕵️‍♂️ Módulo 4: El Veredicto del Trazador":
+    modulo_4_trazador.render()

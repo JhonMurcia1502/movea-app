@@ -34,7 +34,7 @@ def mostrar_popup(fase_id):
     if fase_id == 1:
         st.subheader("Zona tropical")
         st.markdown("En el trópico, bajo el dominio de la célula de Hadley, observamos la señal canónica del tape recorder. Las bandas diagonales ascendentes muestran cómo el aire, al elevarse, transporta la firma estacional del vapor de agua hacia la estratosfera. Este patrón es la evidencia directa del lento ascenso que define la rama ascendente de la circulación Brewer-Dobson.")
-        try: st.image("assets/images/fase1_ascenso.png")
+        try: st.image("assets/images/Tape Recorder Tropical.png")
         except: st.warning("Falta imagen")
         if st.button("Siguiente ➡️"):
             st.session_state.popup_activo = 2
@@ -42,7 +42,7 @@ def mostrar_popup(fase_id):
     elif fase_id == 2:
         st.subheader("Latitudes medias")
         st.markdown("En las latitudes medias, la señal de ascenso desaparece. La dinámica aquí está dominada por la célula de Ferrel, que se caracteriza por un movimiento de aire superficial hacia los polos y un descenso de aire estratosférico. El gráfico muestra un fuerte ciclo estacional, pero sin la propagación vertical vista en el trópico, indicando una ausencia de ascenso neto a gran escala hacia la estratosfera.")
-        try: st.image("assets/images/fase2_transporte.png")
+        try: st.image("assets/images/Tape Recorder Medias.png")
         except: st.warning("Falta imagen")
         col_back, col_next = st.columns(2)
         with col_back:
@@ -56,7 +56,7 @@ def mostrar_popup(fase_id):
     elif fase_id == 3:
         st.subheader("Zona polar")
         st.markdown("En las regiones polares, el aire es extremadamente seco, una característica del dominio de la célula Polar. Este es el punto de descenso principal de la circulación Brewer-Dobson. El aire que ha viajado por la estratosfera pierde su humedad y desciende de nuevo a la troposfera, por lo que no se observa ninguna señal de ascenso, sino un fuerte ciclo anual influenciado por el vórtice polar.")
-        try: st.image("assets/images/fase3_descenso.png")
+        try: st.image("assets/images/Tape Recorder Polar.png")
         except: st.warning("Falta imagen")
         if st.button("🔄 Volver al inicio"):
             st.session_state.popup_activo = None
@@ -198,7 +198,7 @@ def render():
             st.markdown("En física, un fluido es una sustancia que se deforma continuamente bajo la aplicación de una tensión cortante, sin importar cuán pequeña sea. En términos más simples, es una sustancia cuyas partículas no tienen una posición fija y pueden moverse con libertad."
                     "\n\nEl aire que compone nuestra atmósfera, una mezcla de gases como nitrógeno, oxígeno y vapor de agua, es un ejemplo clásico de un fluido compresible.")
         with col_imgfluido:
-            try: st.image("assets/images/concepto_fluido.gif", use_container_width=True)
+            try: st.image("assets/images/Timelapse_Global_H2O.gif", use_container_width=True)
             except: st.warning("Falta gif fluido")
 
     elif st.session_state.paso_modulo1 == 7:
@@ -211,7 +211,7 @@ def render():
                         "\n1. Laminar: Suave y ordenado, con capas de fluido que se deslizan unas sobre otras."
                         "\n2. Turbulento: Caótico e irregular, con remolinos y vórtices.")
         with col_flujoimg:
-            try: st.image("assets/images/concepto_flujo.gif", use_container_width=True)
+            try: st.image("assets/images/Timelapse_Global_H2O.gif", use_container_width=True)
             except: st.warning("Falta gif flujo")
 
     elif st.session_state.paso_modulo1 == 8:
@@ -222,7 +222,7 @@ def render():
             st.markdown("La Circulación de Brewer-Dobson es un modelo que describe el flujo promedio y a gran escala del fluido atmosférico en la estratosfera. No es un viento que se pueda medir en un solo lugar, sino un lento movimiento residual a escala planetaria."
                         "\n\nEste flujo es el principal mecanismo de transporte de masa y energía entre la estratosfera tropical y la polar, siendo responsable de la distribución global de trazadores clave como el ozono y el vapor de agua.")
         with col_circimg:
-            try: st.image("assets/images/concepto_circulacion.gif", use_container_width=True)
+            try: st.image("assets/images/AnimacionBD.gif", use_container_width=True)
             except: st.warning("Falta gif circulacion")
 
     elif st.session_state.paso_modulo1 == 9:
