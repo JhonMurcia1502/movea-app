@@ -205,7 +205,7 @@ def render():
         st.markdown("La convección es el movimiento del fluido, tal como ocurre en tu cocina al hervir agua.")
         col_olla, col_atm = st.columns(2)
         with col_olla:
-            try: st.image("assets/images/mod2_olla.png", caption="Olla hirviendo", use_container_width=True)
+            try: st.image("assets/images/Analogia de la olla.png", caption="Olla hirviendo", use_container_width=True)
             except: st.warning("Falta mod2_olla.png")
         with col_atm:
             st.info("**En la atmósfera:**\nEl suelo caliente actúa como la estufa, haciendo que el aire suba y cree celdas de circulación.")
@@ -246,7 +246,7 @@ def render():
             conodido como celda convectiva, transporta verticalmente calor, humedad y energia.
             """)
         with col_img:
-            try: st.image("assets/images/mod2_def_conveccion.png", caption="Esquema de Convección", use_container_width=True)
+            try: st.image("assets/images/Esquema convección.png", caption="Esquema de Convección", use_container_width=True)
             except: st.info("[Imagen: Esquema general]")
 
     # PANTALLA 2: DEFINICIÓN DE CONVECCIÓN PROFUNDA
@@ -264,12 +264,7 @@ def render():
             """)
         with col_img:
                 try: 
-                        st.video(
-                        "assets/images/mod2_video_profunda.mp4", 
-                        autoplay=True, 
-                        loop=True, 
-                        muted=True
-                    )
+                    st.image("assets/images/M2_cumulonimbus_colores_corregidos.gif", caption="Convección profunda", use_container_width=True)
                 except Exception as e: 
                     st.info("💡 [Sube tu video 'mod2_video_profunda.mp4' a la carpeta assets/images/]")
 
@@ -304,7 +299,7 @@ def render():
                 if st.button("🌎 Ver Monzón de Norteamérica", use_container_width=True):
                     st.session_state.vista_monzon = 'nam'; st.rerun()
             with col_btn2:
-                st.markdown("##### Caso B: Asia / Otro")
+                st.markdown("##### Caso B: Asia")
                 if st.button("🌏 Ver Monzón Asiático", use_container_width=True):
                     st.session_state.vista_monzon = 'asia'; st.rerun()
 
@@ -312,14 +307,24 @@ def render():
         elif st.session_state.vista_monzon == 'nam':
             st.subheader("El Monzón de Norteamérica (NAM)")
             st.markdown("El calor del desierto impulsa una convección profunda que transporta humedad desde el Golfo de California.")
-            try: st.image("assets/images/mod2_monzon_nam.png", caption="Mapa del NAM", use_container_width=True)
+            try: st.video(
+                    "assets/images/Monzon NAM.mp4",
+                    autoplay=True,
+                    loop=True,
+                    muted=True
+            )
             except: st.warning("Falta imagen")
             if st.button("⬅️ Volver a definiciones"): st.session_state.vista_monzon = 'intro'; st.rerun()
 
         elif st.session_state.vista_monzon == 'asia':
             st.subheader("El Monzón Asiático")
             st.markdown("El sistema monzónico más grande del mundo. Genera lluvias torrenciales en la India y el Sudeste Asiático.")
-            try: st.image("assets/images/mod2_monzon_asia.png", caption="Mapa Asia", use_container_width=True)
+            try: st.video(
+                    "assets/images/Monzon Asia.mp4",
+                    autoplay=True,
+                    loop=True,
+                    muted=True
+            )
             except: st.warning("Falta imagen")
             if st.button("⬅️ Volver a definiciones"): st.session_state.vista_monzon = 'intro'; st.rerun()
 
