@@ -45,14 +45,14 @@ def mostrar_mecanismo(tipo):
     if tipo == "radiacion":
         st.subheader("1. Radiación ☀️")
         st.markdown("Es energía que viaja por el espacio. El Sol emite ondas electromagnéticas hasta la Tierra.")
-        try: st.image("assets/images/mod2_radiacion.png")
+        try: st.image("assets/images/M2_radiacion.gif")
         except: st.warning("Falta img")
         if st.button("Siguiente: Conducción ➡️"): st.session_state.popup_mecanismo = "conduccion"; st.rerun()
 
     elif tipo == "conduccion":
         st.subheader("2. Conducción 🔥")
         st.markdown("Es calor por contacto directo. El suelo caliente pasa energía al aire que lo toca.")
-        try: st.image("assets/images/mod2_conduccion.png")
+        try: st.image("assets/images/M2_conduccion.gif")
         except: st.warning("Falta img")
         col_prev, col_next = st.columns(2)
         with col_prev:
@@ -63,7 +63,7 @@ def mostrar_mecanismo(tipo):
     elif tipo == "conveccion":
         st.subheader("3. Convección 🌬️")
         st.markdown("Es calor en movimiento. El aire caliente sube transportando energía.")
-        try: st.image("assets/images/mod2_conveccion.png")
+        try: st.image("assets/images/M2_conveccion.gif")
         except: st.warning("Falta img")
         col_prev, col_next = st.columns(2)
         with col_prev:
@@ -141,7 +141,7 @@ def render():
         st.info("👇 Presiona **Siguiente** para comenzar.")
 
     elif st.session_state.paso_modulo2 == 2:
-        img_base64 = get_img_as_base64("assets/images/mod2_intro.gif")
+        img_base64 = get_img_as_base64("assets/images/circulacion_convectiva_global.gif")
         if img_base64:
              st.markdown(f"""<style>.stApp {{background-image: url("data:image/gif;base64,{img_base64}"); background-size: cover; background-attachment: fixed;}}</style>""", unsafe_allow_html=True)
         st.markdown("<h1 style='text-align: center; color: white; text-shadow: 2px 2px 4px #000;'>AIRE CÁLIDO ASCIENDE ⬆️<br>AIRE FRÍO DESCIENDE ⬇️</h1>", unsafe_allow_html=True)
@@ -172,7 +172,7 @@ def render():
                 mostrar_densidad()
 
         with col_img:
-            try: st.image("assets/images/mod2_sol_tierra.png", caption="Calentamiento Superficial", use_container_width=True)
+            try: st.image("assets/images/M2_celda_convectiva.gif", caption="Calentamiento Superficial", use_container_width=True)
             except: st.warning("Falta imagen: mod2_sol_tierra.png")
 
     # --- UNIDAD 2: EXPLIQUEMOS (3 BOTONES) ---
@@ -188,12 +188,12 @@ def render():
          **Haz clic sobre cada uno para ver un ejemplo**
                     """)
         col1, col2, col3 = st.columns(3)
-        with col1:
-            st.image("https://cdn-icons-png.flaticon.com/512/169/169367.png", width=80)
-            if st.button("1. Conducción", use_container_width=True): st.session_state.popup_mecanismo = "conduccion"; st.rerun()
         with col2:
+            st.image("https://cdn-icons-png.flaticon.com/512/169/169367.png", width=80)
+            if st.button("2. Conducción", use_container_width=True): st.session_state.popup_mecanismo = "conduccion"; st.rerun()
+        with col1:
             st.image("https://cdn-icons-png.flaticon.com/512/1541/1541486.png", width=80)
-            if st.button("2. Radiación", use_container_width=True): st.session_state.popup_mecanismo = "radiacion"; st.rerun()
+            if st.button("1. Radiación", use_container_width=True): st.session_state.popup_mecanismo = "radiacion"; st.rerun()
         with col3:
             st.image("https://cdn-icons-png.flaticon.com/512/950/950986.png", width=80)
             if st.button("3. Convección", use_container_width=True): st.session_state.popup_mecanismo = "conveccion"; st.rerun()
