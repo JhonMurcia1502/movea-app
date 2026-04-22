@@ -26,7 +26,7 @@ def get_img_as_base64(file_path):
 
 # --- FUNCIÓN PARA CARGAR EL SIMULADOR HTML PERSONALIZADO ---
 def cargar_simulador_html():
-    ruta_html = "assets/html/simulador_isotopos.html"
+    ruta_html = "assets/html/Simulador destilacion.html"
     
     if os.path.exists(ruta_html):
         with open(ruta_html, 'r', encoding='utf-8') as f:
@@ -41,7 +41,7 @@ def cargar_simulador_html():
 def mostrar_moleculas():
     st.subheader("La diferencia está en el núcleo")
     try: 
-        st.image("assets/images/mod3_detalle_nucleo.png", use_container_width=True)
+        st.image("assets/images/M3_H2O-HDO.png", use_container_width=True)
     except: 
         st.info("💡 [Sube 'mod3_detalle_nucleo.png' a assets/images/]")
     st.divider()
@@ -102,7 +102,7 @@ def render():
 
     # PASO 2: ANIMACIÓN DE TRANSICIÓN
     elif st.session_state.paso_modulo3 == 2:
-        img_base64 = get_img_as_base64("assets/images/mod3_fondo_animado.gif")
+        img_base64 = get_img_as_base64("assets/images/animacion_movea.gif")
         if img_base64:
              st.markdown(f"<style>.stApp {{background-image: url('data:image/gif;base64,{img_base64}'); background-size: cover; background-attachment: fixed;}}</style>", unsafe_allow_html=True)
         st.markdown("<br><br><h1 style='text-align: center; color: white; text-shadow: 3px 3px 5px #000;'>MÓDULO 3: LA HUELLA ISOTÓPICA - DINÁMICA DE TRAZADORES ATMOSFÉRICOS Y PROCESOS DE FRACCIONAMIENTO</h1>", unsafe_allow_html=True)
@@ -113,7 +113,7 @@ def render():
         st.header("1. Observemos el fenómeno")
         st.subheader("No toda el agua es igual 💧")
         st.markdown("Existen variaciones moleculares llamadas **Isotopólogos**. El más relevante para rastrear masas de aire es el **HDO**.")
-        try: st.image("assets/images/mod3_moleculas.png", caption="H2O vs HDO", use_container_width=True)
+        try: st.image("assets/images/Isotopos.png", caption="H2O vs HDO", use_container_width=True)
         except: st.warning("Falta imagen: mod3_moleculas.png")
         if st.button("🔍 Ver detalles moleculares"): mostrar_moleculas()
 
@@ -137,51 +137,71 @@ def render():
         st.header("2. Expliquemos lo observado")
         st.subheader("No es solo peso, es Energía")
         st.markdown("""
-        Este "reparto" desigual de moléculas entre el vapor y el líquido se conoce como **Fraccionamiento**.
-        
-        Debido a que el HDO prefiere la fase líquida, la lluvia resultante estará enriquecida en isótopos pesados, 
-        mientras que el vapor de agua que queda en la nube se volverá cada vez más "pobre" o ligero.
+        Aunque el HDO es más pesado, la razón física real de su comportamiento es la Presión de Vapor de Saturación.
         """)
         col_f, col_icon = st.columns([2, 1])
         with col_f:
             st.info("""
-            **El Factor de Fraccionamiento ($\\alpha$):**
-            Es la medida de esta preferencia. Define la relación entre la abundancia isotópica en el líquido respecto al vapor. 
-            Si $\\alpha > 1$, el isótopo pesado prefiere condensar.
+                    $e_{sat}(HDO) < e_{sat}(H_2O)$
             """)
+            st.markdown("El enlace de Hidrógeno-Deuterio es ligeramente más fuerte. Esto significa que el HDO prefiere estar en estado líquido. Requiere menos energía para condensarse y más energía para evaporarse.")
         with col_icon:
-            st.image("https://cdn-icons-png.flaticon.com/512/1624/1624388.png", width=120)
+            st.image("assets/images/nube hdo.png", width=300)
 
     # PASO 6: MODELO RAYLEIGH (DESPLAZADO)
     elif st.session_state.paso_modulo3 == 6:
         st.header("2. Expliquemos lo observado")
-        st.subheader("El Modelo de Destilación de Rayleigh")
+        st.subheader("¿Cómo ocurre dicho proceso?")
+        st.markdown("""
+            Para modelar este proceso en la atmósfera, usamos el Modelo de Destilación de Rayleigh.
+                    
+            Pero primero debemos distinguir entre dos procesos de formación de nubes:
+                    
+        """)
         tab1, tab2 = st.tabs(["1. Sistema Cerrado (Equilibrio)", "2. Sistema Abierto (Rayleigh)"])
-        with tab1: st.info("La lluvia se queda en contacto con la nube. El intercambio continúa.")
-        with tab2: st.error("La lluvia cae y se elimina del sistema al instante. El vapor se agota rápidamente.")
-        try: st.image("assets/images/mod3_rayleigh_esquema.png", use_container_width=True)
+        with tab1: st.info("La lluvia se forma pero se queda dentro de la nubre, manteniendo contacto con el vapor.")
+        with tab2: st.error("La lluvia se forma y cae inmediatamente.")
+        try: st.image("assets/images/Rayleigh.png", width=520)
         except: st.warning("Falta imagen: mod3_rayleigh_esquema.png")
+
+        st.markdown("""
+                    En el modelo Rayleigh, la parcela de aire pierde masa constantemente. Como el HDO se va con la lluvia, el vapor que queda se vuelve cada vez más "pobre" o "ligero". Es un proceso de empobrecimiento irreversible.
+                    """)
 
     # PASO 7: MATEMÁTICA (DESPLAZADO)
     elif st.session_state.paso_modulo3 == 7:
         st.header("2. Expliquemos lo observado")
         st.subheader("La Matemática del Agotamiento")
-        st.latex(r"R = R_0 \cdot f^{(\alpha - 1)}")
-        st.markdown("La relación isotópica ($R$) depende de la fracción de vapor restante ($f$). A mayor altura, menos vapor queda y más 'agotada' está la huella química.")
-        try: st.image("assets/images/mod3_grafica_ideal.png", use_container_width=True)
-        except: st.warning("Falta imagen")
+        colin, colgr = st.columns(2)
+        
+        with colin:
+            st.markdown("La ecuación que predice el agotamiento del isotópologo es la siguiente:")
+            st.latex(r"R = R_0 \cdot f^{(\alpha - 1)}")
+            st.markdown("""
+                    Donde:
+                    - R: Relación isotópica final (HDO/H₂O).
+                    - R₀: Relación inicial (en el océano).
+                    - f: Fracción de vapor restante (disminuye con la altura).
+                    - α: Factor de fraccionamiento (depende de la temperatura).
+                    
+                    La relación isotópica ($R$) depende de la fracción de vapor restante ($f$). A mayor altura, menos vapor queda y más 'agotada' está la huella química.""")
+        with colgr:
+            try: st.image("assets/images/Grafica.png", width=300)
+            except: st.warning("Falta imagen")
 
     # PASO 8: DATOS REALES (DESPLAZADO)
     elif st.session_state.paso_modulo3 == 8:
         st.header("3. Entendiendo el fenómeno")
         st.subheader("Observando la Realidad (Datos ACE-FTS)")
-        try: st.image("assets/images/mod3_perfiles_ace.png", use_container_width=True)
+        st.markdown("Estas gráficas nos permiten observar la concentración de agua, agua deuterada y el agotamiento de agua deuterada en la atmosfera tropical.")
+        try: st.image("assets/images/Perfil Vertical Fraccionamiento.png", use_container_width=True)
         except: st.warning("Falta imagen")
-        st.success("El modelo predice el agotamiento hasta los 16km. Lo que ocurre después desafía la destilación simple.")
+        st.success("Si observamos detalladamente podemos ver como el agotamiento ocurre hasta la altura de 16km aproximadamente, tal cual predice el modelo de Raileygh. No obstante despues se muestra un incremento, el motivo detras de esto lo veremos en el ultimo modulo.")
 
     # PASO 9: SIMULADOR
     elif st.session_state.paso_modulo3 == 9:
         st.header("4. Hora de explorar")
+        st.markdown("Ahora que conocemos la teória es momento de verla en acción, utiliza el siguiente simulador para observar como ocurre el agotamiento de HDO en una parcela de aire a medida que asciende.")
         cargar_simulador_html()
 
     # PASO 10: QUIZ
