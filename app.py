@@ -8,7 +8,7 @@ from modules import modulo_4_trazador
 st.set_page_config(page_title="MOVEA - Física Atmosférica", layout="wide")
 
 # --- SIDEBAR GLOBAL ---
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/1162/1162951.png", width=100)
+st.sidebar.image("assets/images/globe.png", width=100)
 st.sidebar.title("Navegación General")
 
 # Menú Principal
