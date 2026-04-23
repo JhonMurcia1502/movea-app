@@ -5,3 +5,4 @@ plotly
 xarray
 netCDF4
 h5netcdf
+st-gsheets-connection

@@ -198,7 +198,12 @@ def render():
             st.markdown("En física, un fluido es una sustancia que se deforma continuamente bajo la aplicación de una tensión cortante, sin importar cuán pequeña sea. En términos más simples, es una sustancia cuyas partículas no tienen una posición fija y pueden moverse con libertad."
                     "\n\nEl aire que compone nuestra atmósfera, una mezcla de gases como nitrógeno, oxígeno y vapor de agua, es un ejemplo clásico de un fluido compresible.")
         with col_imgfluido:
-            try: st.image("assets/images/Timelapse_Global_H2O.gif", use_container_width=True)
+            try: st.video(
+                    "assets/images/H2O GLOBAL.mp4",
+                    autoplay=True,
+                    loop=True,
+                    muted=True
+            )
             except: st.warning("Falta gif fluido")
 
     elif st.session_state.paso_modulo1 == 7:

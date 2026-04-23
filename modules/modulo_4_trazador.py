@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import base64
+import streamlit.components.v1 as components
+import os
 
 # --- CONFIGURACIÓN DE LAS UNIDADES ---
 UNIDADES = {
@@ -35,6 +37,18 @@ def render():
     
     def anterior():
         st.session_state.paso_modulo4 -= 1
+
+    # ---- Función HTML ---
+
+    def cargar_simulador_trazador():
+        ruta_html = "assets/html/simulador_trazador.html"
+        if os.path.exists(ruta_html):
+            with open(ruta_html, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+        # El alto de 800px es ideal para que quepan los controles y la gráfica
+            components.html(html_content, height=800, scrolling=True)
+        else:
+            st.error("No se encontró el archivo del simulador.")
 
     # --- SIDEBAR ---
     st.sidebar.markdown("---")
@@ -156,22 +170,9 @@ def render():
         st.markdown("### El Laboratorio de Trazadores")
         st.markdown("Imagina que eres un físico atmosférico analizando masas de aire. Ajusta las condiciones de la atmósfera y observa la huella isotópica resultante en la baja estratosfera.")
         
-        st.divider()
-        velocidad = st.select_slider(
-            "Selecciona la velocidad de ascenso de la masa de aire:",
-            options=["Muy Lento (Equilibrio térmico)", "Lento (Circulación BD)", "Tormenta Moderada", "Convección Profunda Extrema"]
-        )
-        
-        fase_agua = st.radio("¿Qué le pasa al agua durante el ascenso?", ["Cae lentamente como lluvia líquida", "Se congela rápidamente en cristales de hielo"])
-        
-        st.markdown("#### Resultado del Análisis:")
-        if velocidad in ["Muy Lento (Equilibrio térmico)", "Lento (Circulación BD)"] and fase_agua == "Cae lentamente como lluvia líquida":
-            st.info("📉 **Vapor Agotado:** El Modelo de Rayleigh actuó perfectamente. La masa de aire subió lentamente deshidratándose. Esta masa pertenece al ascenso general de la celda de Hadley.")
-        elif velocidad == "Convección Profunda Extrema" and fase_agua == "Se congela rápidamente en cristales de hielo":
-            st.error("📈 **Vapor Enriquecido:** ¡Overshooting detectado! Los cristales de hielo fueron inyectados en la estratosfera y se sublimaron. Esta masa de aire proviene de una tormenta violenta reciente.")
-        else:
-            st.warning("⚖️ **Señal Mixta:** Las condiciones no son extremas. En la atmósfera real, la señal final suele ser una mezcla de ambos procesos.")
+        cargar_simulador_trazador()
 
+        
     # --- UNIDAD 5: QUIZ ---
     elif st.session_state.paso_modulo4 == 7:
         st.header("5. Pon a prueba tu conocimiento")

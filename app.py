@@ -1,11 +1,26 @@
 import streamlit as st
-# Importamos ambos módulos
+from streamlit_gsheets import GSheetsConnection
+
+# Importación de los módulos de MOVEA
 from modules import modulo_1_dinamica
 from modules import modulo_2_termo
 from modules import modulo_3_isotopos
 from modules import modulo_4_trazador
 
+# Configuración global de la página
 st.set_page_config(page_title="MOVEA - Física Atmosférica", layout="wide")
+
+# ==========================================
+# PRUEBA DE CONEXIÓN A LA NUBE (Google Sheets)
+# ==========================================
+try:
+    # Intenta establecer la conexión usando secrets.toml
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    df = conn.read() # Intenta leer la hoja para confirmar permisos
+    st.sidebar.success("✅ Nube conectada")
+except Exception as e:
+    st.sidebar.error(f"❌ Error de nube: Revisa tus Secrets.")
+    st.sidebar.write(e) # Esto te mostrará el error exacto si algo falla
 
 # --- SIDEBAR GLOBAL ---
 st.sidebar.image("assets/images/globe.png", width=100)
