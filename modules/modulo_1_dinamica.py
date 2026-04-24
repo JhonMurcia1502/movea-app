@@ -216,7 +216,12 @@ def render():
                         "\n1. Laminar: Suave y ordenado, con capas de fluido que se deslizan unas sobre otras."
                         "\n2. Turbulento: Caótico e irregular, con remolinos y vórtices.")
         with col_flujoimg:
-            try: st.image("assets/images/Timelapse_Global_H2O.gif", use_container_width=True)
+            try: st.video(
+                    "assets/images/H2O GLOBAL.mp4",
+                    autoplay=True,
+                    loop=True,
+                    muted=True
+            )
             except: st.warning("Falta gif flujo")
 
     elif st.session_state.paso_modulo1 == 8:
