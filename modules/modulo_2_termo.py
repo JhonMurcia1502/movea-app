@@ -2,6 +2,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
 import base64
+from streamlit_gsheets import GSheetsConnection
 
 # --- CONFIGURACIÓN DE LAS UNIDADES ---
 # Ajustamos los índices porque agregamos una pantalla más (Total: 12 pasos)
@@ -10,8 +11,7 @@ UNIDADES = {
     "2. Expliquemos lo observado": 3,
     "3. Entendiendo el fenómeno": 7, # Se mueve al 7
     "4. Hora de explorar": 10,       # Se mueve al 10
-    "5. Pon a prueba tu conocimiento": 11,
-    "6. Encuesta de satisfacción": 12
+    "5. Pon a prueba tu conocimiento y Encuesta": 11
 }
 
 # --- URL SIMULADOR ---
@@ -335,50 +335,62 @@ def render():
         st.markdown("**Tu Misión:** Activa 'Símbolos de Energía' y calienta el agua para ver la convección.")
         components.iframe(URL_ENERGIA, height=650)
 
-    # --- UNIDAD 5: QUIZ ---
+# --- UNIDAD 5: QUIZ Y ENCUESTA UNIFICADA ---
     elif st.session_state.paso_modulo2 == 11:
-        st.header("5. Pon a prueba tu conocimiento")
-        with st.form("quiz_m2_form"):
-            p1 = st.radio("1. Mecanismo que mueve calor por contacto:", ["Radiación", "Conducción", "Convección"], index=None)
-            st.write("")
+        st.header("5. Pon a prueba tu conocimiento y Encuesta Final")
+        st.markdown("Demuestra lo que aprendiste sobre convección y evalúa tu experiencia.")
+        
+        estudiante = st.text_input("Ingresa tu Nombre o Código de Estudiante:")
+        
+        with st.form("evaluacion_m2"):
+            st.subheader("A. Quiz de Termodinámica y Monzones")
+            p1 = st.radio("1. Mecanismo que mueve calor por contacto directo:", ["Radiación", "Conducción", "Convección"], index=None)
             p2 = st.radio("2. ¿Qué caracteriza a la convección profunda?", ["Solo ocurre en el suelo", "Llega hasta la tropopausa", "Es horizontal"], index=None)
-            st.write("")
             p3 = st.radio("3. El Monzón se produce por...", ["Diferencia térmica Tierra-Mar", "Fases Lunares", "Mareas"], index=None)
             
-            submitted = st.form_submit_button("Enviar Respuestas")
-            if submitted:
-                puntaje = 0
-                if p1 == "Conducción": puntaje +=1
-                if p2 == "Llega hasta la tropopausa": puntaje +=1
-                if p3 == "Diferencia térmica Tierra-Mar": puntaje +=1
-                
-                st.session_state.resultados_quiz_m2 = {"Puntaje": puntaje}
-                if puntaje == 3: st.balloons(); st.success("¡Perfecto! (3/3)")
-                else: st.warning(f"Tu puntaje: {puntaje}/3")
-
-    # --- UNIDAD 6: ENCUESTA ---
-    elif st.session_state.paso_modulo2 == 12:
-        st.header("6. Encuesta de satisfacción")
-        
-        # 1. Formulario
-        with st.form("encuesta_m2"):
-            usuario = st.text_input("Nombre / Código")
-            claridad = st.slider("Claridad", 1, 5, 5)
-            comentarios = st.text_area("Comentarios")
-            btn_enviar = st.form_submit_button("Generar Reporte 💾", type="primary")
-        
-        # 2. Lógica post-envío (Botón descarga fuera del form)
-        if btn_enviar:
-            if not usuario:
-                st.error("Ingresa tu nombre.")
-            else:
-                quiz_data = st.session_state.resultados_quiz_m2
-                nota = quiz_data["Puntaje"] if quiz_data else "N/A"
-                datos = {"Estudiante": [usuario], "Módulo": ["2"], "Nota": [nota], "Claridad": [claridad], "Comentarios": [comentarios], "Fecha": [pd.Timestamp.now()]}
-                df = pd.DataFrame(datos)
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.success("¡Gracias!"); st.balloons()
-                st.download_button("Descargar Reporte", csv, f"Reporte_Mod2_{usuario}.csv", "text/csv")
+            st.divider()
+            st.subheader("B. Encuesta de Satisfacción")
+            valoracion = st.slider("Claridad del contenido (1 = Confuso, 5 = Muy claro)", 1, 5, 5)
+            comentarios = st.text_area("¿Qué fue lo más interesante de este módulo?")
+            
+            enviado = st.form_submit_button("Enviar Resultados y Finalizar", type="primary")
+            
+            if enviado:
+                if not estudiante:
+                    st.warning("⚠️ Por favor ingresa tu nombre.")
+                elif p1 is None or p2 is None or p3 is None:
+                    st.warning("⚠️ Completa todas las preguntas del quiz.")
+                else:
+                    with st.spinner("Guardando en la nube..."):
+                        try:
+                            pts = 0
+                            if p1 == "Conducción": pts += 1
+                            if p2 == "Llega hasta la tropopausa": pts += 1
+                            if p3 == "Diferencia térmica Tierra-Mar": pts += 1
+                            
+                            url_hoja = "https://docs.google.com/spreadsheets/d/1DVRJmYBDmAaJkLrxgCOedtglRfzSHyOcs0VfLNh_OFA/edit"
+                            conn = st.connection("gsheets", type=GSheetsConnection)
+                            df_existente = conn.read(spreadsheet=url_hoja)
+                            
+                            nuevo_registro = pd.DataFrame([{
+                                "Fecha": pd.Timestamp.now(tz="America/Bogota").strftime("%Y-%m-%d %H:%M:%S"),
+                                "Estudiante": estudiante,
+                                "Modulo": "2-Termo",
+                                "Puntaje": f"{pts}/3",
+                                "Q1_Respuesta": p1,
+                                "Q2_Respuesta": p2,
+                                "Q3_Respuesta": p3,
+                                "Valoracion": valoracion,
+                                "Comentarios": comentarios
+                            }])
+                            
+                            df_actualizado = pd.concat([df_existente, nuevo_registro], ignore_index=True)
+                            conn.update(spreadsheet=url_hoja, data=df_actualizado)
+                            
+                            st.success(f"¡Resultados guardados, {estudiante}! Has finalizado el Módulo 2.")
+                            if pts == 3: st.balloons()
+                        except Exception as e:
+                            st.error(f"Error al sincronizar: {e}")
 
     # --- FOOTER ---
     st.write("")
@@ -389,7 +401,6 @@ def render():
         mostrar_atras = True
         if st.session_state.paso_modulo2 == 9 and st.session_state.vista_monzon != 'intro':
             mostrar_atras = False
-        
         if st.session_state.paso_modulo2 > 1 and mostrar_atras:
             st.button("⬅️ Atrás", on_click=anterior, key="atras_m2")
             
@@ -397,6 +408,6 @@ def render():
         mostrar_siguiente = True
         if st.session_state.paso_modulo2 == 9 and st.session_state.vista_monzon != 'intro':
             mostrar_siguiente = False
-            
-        if st.session_state.paso_modulo2 < 12 and mostrar_siguiente:
+        # Ajustado a 11 pasos máximos
+        if st.session_state.paso_modulo2 < 11 and mostrar_siguiente:
             st.button("Siguiente ➡️", on_click=siguiente, key="sig_m2")

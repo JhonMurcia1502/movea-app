@@ -3,6 +3,7 @@ import pandas as pd
 import base64
 import streamlit.components.v1 as components
 import os
+from streamlit_gsheets import GSheetsConnection
 
 # --- CONFIGURACIÓN DE LAS UNIDADES ---
 UNIDADES = {
@@ -10,8 +11,7 @@ UNIDADES = {
     "2. Expliquemos lo observado": 3, 
     "3. Entendiendo el fenómeno": 5, 
     "4. Hora de explorar": 6, 
-    "5. Pon a prueba tu conocimiento": 7,
-    "6. Encuesta de satisfacción": 8
+    "5. Pon a prueba tu conocimiento y Encuesta": 7
 }
 
 def get_img_as_base64(file_path):
@@ -175,33 +175,77 @@ def render():
         
     # --- UNIDAD 5: QUIZ ---
     elif st.session_state.paso_modulo4 == 7:
-        st.header("5. Pon a prueba tu conocimiento")
-        with st.form("quiz_m4"):
-            q1 = st.radio("1. ¿Qué proceso físico 'detiene' el fraccionamiento de Rayleigh en las tormentas fuertes?", ["La ebullición", "La congelación rápida del agua en hielo", "La conducción de calor"], index=None)
-            q2 = st.radio("2. ¿Cómo libera el hielo inyectado su HDO en la estratosfera?", ["Se derrite y llueve", "A través de la sublimación (de hielo a vapor)", "A través de la radiación"], index=None)
-            q3 = st.radio("3. Si detectamos vapor de agua con mucho HDO (enriquecido) en la estratosfera, sabemos que el aire subió...", ["Muy lentamente", "A través de convección profunda rápida"], index=None)
-            if st.form_submit_button("Enviar Respuestas"):
-                pts = 0
-                if q1 == "La congelación rápida del agua en hielo": pts += 1
-                if q2 == "A través de la sublimación (de hielo a vapor)": pts += 1
-                if q3 == "A través de convección profunda rápida": pts += 1
-                st.session_state.resultados_quiz_m4 = {"Puntaje": pts}
-                if pts == 3: st.balloons(); st.success("¡Excelente! Has dominado la dinámica isotópica.")
-                else: st.warning(f"Puntaje: {pts}/3")
+       st.header("5. Pon a prueba tu conocimiento y Encuesta Final")
+    st.markdown("Ayúdanos a evaluar este simulador interactivo para la investigación. Tus respuestas se guardarán de forma segura.")
 
-    # --- UNIDAD 6: ENCUESTA FINAL ---
-    elif st.session_state.paso_modulo4 == 8:
-        st.header("6. Encuesta de satisfacción")
-        st.success("¡Felicidades! Has completado todos los módulos de MOVEA.")
-        with st.form("encuesta_m4"):
-            user = st.text_input("Nombre / Código")
-            rating = st.slider("Valoración Global del Aplicativo MOVEA", 1, 5, 5)
-            comments = st.text_area("Comentarios Finales y Sugerencias")
-            if st.form_submit_button("Generar Certificado Final 💾"):
-                if not user: st.error("Ingresa tu nombre para el certificado final.")
-                else:
-                    df = pd.DataFrame({"Estudiante": [user], "Módulo": ["4-Final"], "Valoración": [rating], "Comentarios": [comments]})
-                    st.download_button("Descargar Certificado", df.to_csv(index=False).encode('utf-8'), f"Certificado_MOVEA_{user}.csv")
+    # 1. Identificación
+    estudiante = st.text_input("Ingresa tu Nombre o Código de Estudiante:")
+
+    # 2. Formulario unificado
+    with st.form("evaluacion_m4"):
+        st.subheader("A. Quiz de Microfísica y Trazadores")
+        q1 = st.radio("1. ¿Qué proceso físico 'detiene' el fraccionamiento de Rayleigh en las tormentas fuertes?", 
+                      ["La ebullición", "La congelación rápida del agua en hielo", "La conducción de calor"], index=None)
+        
+        q2 = st.radio("2. ¿Cómo libera el hielo inyectado su HDO en la estratosfera?", 
+                      ["Se derrite y llueve", "A través de la sublimación (de hielo a vapor)", "A través de la radiación"], index=None)
+        
+        q3 = st.radio("3. Si detectamos vapor de agua muy enriquecido (mucho HDO) en la estratosfera baja, sabemos que el aire subió...", 
+                      ["Lentamente (Circulación general)", "Vía convección profunda rápida (Tormentas)"], index=None)
+
+        st.divider()
+
+        st.subheader("B. Encuesta de Satisfacción (MOVEA)")
+        valoracion = st.slider("¿Qué tanto te ayudó este módulo interactivo a entender el tema? (1 = Nada, 5 = Mucho)", 1, 5, 3)
+        comentarios = st.text_area("¿Qué fue lo que más te gustó o qué mejorarías del simulador de trazadores?")
+
+        enviado = st.form_submit_button("Enviar Resultados y Finalizar")
+
+        # 3. Lógica de guardado en la nube
+        if enviado:
+            if not estudiante:
+                st.warning("⚠️ Por favor, ingresa tu nombre o código antes de enviar.")
+            elif q1 is None or q2 is None or q3 is None:
+                st.warning("⚠️ Por favor, selecciona una respuesta para todas las preguntas del quiz.")
+            else:
+                with st.spinner("Sincronizando tus respuestas con la base de datos del investigador..."):
+                    try:
+                        # Calcular puntaje
+                        pts = 0
+                        if q1 == "La congelación rápida del agua en hielo": pts += 1
+                        if q2 == "A través de la sublimación (de hielo a vapor)": pts += 1
+                        if q3 == "Vía convección profunda rápida (Tormentas)": pts += 1
+
+                        # REEMPLAZA ESTA URL POR LA DE TU HOJA (La misma que usaste en app.py)
+                        url_hoja = "https://docs.google.com/spreadsheets/d/1DVRJmYBDmAaJkLrxgCOedtglRfzSHyOcs0VfLNh_OFA/edit"
+                        
+                        # Conectar y leer
+                        conn = st.connection("gsheets", type=GSheetsConnection)
+                        df_existente = conn.read(spreadsheet=url_hoja)
+
+                        # Preparar la nueva fila con hora local
+                        nuevo_registro = pd.DataFrame([{
+                            "Fecha": pd.Timestamp.now(tz="America/Bogota").strftime("%Y-%m-%d %H:%M:%S"),
+                            "Estudiante": estudiante,
+                            "Modulo": "4-Trazadores",
+                            "Puntaje": f"{pts}/3",
+                            "Q1_Respuesta": q1,
+                            "Q2_Respuesta": q2,
+                            "Q3_Respuesta": q3,
+                            "Valoracion": valoracion,
+                            "Comentarios": comentarios
+                        }])
+
+                        # Unir y subir a Google Sheets
+                        df_actualizado = pd.concat([df_existente, nuevo_registro], ignore_index=True)
+                        conn.update(spreadsheet=url_hoja, data=df_actualizado)
+
+                        st.success(f"¡Excelente trabajo, {estudiante}! Tus resultados han sido guardados con éxito en la plataforma.")
+                        if pts == 3:
+                            st.balloons()
+                            
+                    except Exception as e:
+                        st.error(f"Hubo un error de conexión al guardar: {e}")
 
     # --- FOOTER ---
     st.divider()

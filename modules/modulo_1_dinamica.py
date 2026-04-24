@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import pandas as pd # <--- IMPORTANTE: Necesario para generar el Excel/CSV
 import base64
 import time
+from streamlit_gsheets import GSheetsConnection
 
 # --- CONFIGURACIÓN DE LAS UNIDADES ---
 UNIDADES = {
@@ -10,8 +11,7 @@ UNIDADES = {
     "2. Expliquemos lo observado": 3, 
     "3. Entendiendo el fenómeno": 6, 
     "4. Hora de explorar": 9,
-    "5. Pon a prueba tu conocimiento": 10,
-    "6. Encuesta de satisfacción": 11
+    "5. Pon a prueba tu conocimiento y Encuesta": 10
 }
 
 # --- URLs SIMULADORES ---
@@ -261,122 +261,65 @@ def render():
             components.iframe(URL_PRESION, height=600)
             if st.button("⬅️ Volver al menú"): st.session_state.view_simulador = 'menu'; st.rerun()
 
-    # === PASO 10: QUIZ INTERACTIVO (CON GUARDADO EN MEMORIA) ===
+    # === PASO 10: QUIZ Y ENCUESTA UNIFICADOS ===
     elif st.session_state.paso_modulo1 == 10:
-        st.header("5. Pon a prueba tu conocimiento")
-        st.markdown("Selecciona la respuesta correcta para cada pregunta.")
-        st.write("---")
-        with st.form("quiz_form"):
-            r1 = st.radio("1. ¿Cuál es la mejor definición de un fluido?", ["Sustancia siempre líquida", "Sustancia sin forma fija que se deforma", "Gas que cambia color"], index=None)
-            st.write("")
-            r2 = st.radio("2. La Circulación Brewer-Dobson es fundamental porque...", ["Genera huracanes", "Transporta químicos y vapor hacia los polos", "Enfría la superficie"], index=None)
-            st.write("")
-            r3 = st.radio("3. El 'Tape Recorder' atmosférico nos muestra evidencia de:", ["Ascenso lento en trópicos", "Velocidad del viento", "Temperatura del océano"], index=None)
-            st.write("")
-            r4 = st.radio("4. En el simulador, al calentar un gas en volumen fijo, la presión...", ["Disminuye", "Se mantiene", "Aumenta"], index=None)
-            st.write("")
-            submitted = st.form_submit_button("Enviar Respuestas")
-            
-            if submitted:
-                puntaje = 0
-                if r1 == "Sustancia sin forma fija que se deforma": puntaje += 1; st.success("1. Correcto")
-                else: st.error("1. Incorrecto")
-                
-                if r2 == "Transporta químicos y vapor hacia los polos": puntaje += 1; st.success("2. Correcto")
-                else: st.error("2. Incorrecto")
-
-                if r3 == "Ascenso lento en trópicos": puntaje += 1; st.success("3. Correcto")
-                else: st.error("3. Incorrecto")
-
-                if r4 == "Aumenta": puntaje += 1; st.success("4. Correcto")
-                else: st.error("4. Incorrecto")
-
-                # --- GUARDADO EN SESSION_STATE ---
-                # Guardamos las respuestas en la memoria del navegador para usarlas al final
-                st.session_state.resultados_quiz = {
-                    "Puntaje_Quiz": puntaje,
-                    "Resp_1": r1,
-                    "Resp_2": r2,
-                    "Resp_3": r3,
-                    "Resp_4": r4
-                }
-
-                if puntaje == 4: st.balloons(); st.markdown("### 🎉 ¡Perfecto! (4/4)")
-                else: st.markdown(f"### Tu puntaje: {puntaje}/4")
-                
-                st.info("Tus resultados han sido guardados temporalmente. Continúa a la encuesta para finalizar.")
-# === PASO 11: ENCUESTA Y REPORTE FINAL (CORREGIDO) ===
-    elif st.session_state.paso_modulo1 == 11:
-        st.header("6. Encuesta de satisfacción")
-        st.markdown("""
-        ¡Has llegado al final del Módulo 1! 
-        Por favor, responde estas breves preguntas para generar tu **Certificado de Finalización** (Reporte).
-        """)
+        st.header("5. Pon a prueba tu conocimiento y Encuesta Final")
+        st.markdown("Selecciona la respuesta correcta para cada pregunta y evalúa este módulo.")
         
-        # 1. EL FORMULARIO (Solo para recoger datos)
-        with st.form("encuesta_form"):
-            col_eval1, col_eval2 = st.columns(2)
+        estudiante = st.text_input("Ingresa tu Nombre o Código de Estudiante:")
+        
+        with st.form("evaluacion_m1"):
+            st.subheader("A. Quiz de Dinámica de Fluidos")
+            r1 = st.radio("1. ¿Cuál es la mejor definición de un fluido?", ["Sustancia siempre líquida", "Sustancia sin forma fija que se deforma", "Gas que cambia color"], index=None)
+            r2 = st.radio("2. La Circulación Brewer-Dobson es fundamental porque...", ["Genera huracanes", "Transporta químicos y vapor hacia los polos", "Enfría la superficie"], index=None)
+            r3 = st.radio("3. El 'Tape Recorder' atmosférico nos muestra evidencia de:", ["Ascenso lento en trópicos", "Velocidad del viento", "Temperatura del océano"], index=None)
+            r4 = st.radio("4. En el simulador, al calentar un gas en volumen fijo, la presión...", ["Disminuye", "Se mantiene", "Aumenta"], index=None)
             
-            with col_eval1:
-                st.markdown("**Claridad del contenido**")
-                val_claridad = st.slider("¿Qué tan fácil fue entender los conceptos?", 1, 5, 5, key="val_claridad")
-                
-            with col_eval2:
-                st.markdown("**Recursos Visuales**")
-                val_visual = st.slider("¿Te ayudaron las animaciones y simuladores?", 1, 5, 5, key="val_visual")
-                
-            st.markdown("**Comentarios Adicionales**")
-            comentarios = st.text_area("¿Qué te gustaría ver en los próximos módulos?", placeholder="Escribe aquí tu opinión...")
+            st.divider()
+            st.subheader("B. Encuesta de Satisfacción")
+            valoracion = st.slider("¿Qué tan fácil fue entender los conceptos y simuladores? (1 = Difícil, 5 = Muy fácil)", 1, 5, 5)
+            comentarios = st.text_area("¿Qué te gustaría ver en los próximos módulos o qué mejorarías?")
             
-            # Identificación
-            usuario = st.text_input("Nombre o Código de Estudiante (Obligatorio para el reporte)")
-
-            st.write("")
-            # El botón de envío solo cambia el estado, NO descarga nada aún
-            btn_enviar_encuesta = st.form_submit_button("Generar Reporte Completo 💾", type="primary")
-
-        # 2. LÓGICA FUERA DEL FORMULARIO (Se ejecuta al presionar el botón)
-        if btn_enviar_encuesta:
-            if not usuario:
-                st.error("⚠️ Por favor ingresa tu nombre dentro del formulario para generar el reporte.")
-            else:
-                # A. Recuperar datos del Quiz
-                datos_quiz = st.session_state.resultados_quiz
-                if datos_quiz is None:
-                    datos_quiz = {"Puntaje_Quiz": "No presentado", "Resp_1": "N/A", "Resp_2": "N/A", "Resp_3": "N/A", "Resp_4": "N/A"}
-
-                # B. Consolidar TODO
-                datos_finales = {
-                    "Estudiante": [usuario],
-                    "Fecha": [pd.Timestamp.now()],
-                    "Eval_Claridad": [val_claridad],
-                    "Eval_Visual": [val_visual],
-                    "Comentarios": [comentarios],
-                    "Quiz_Puntaje": [datos_quiz["Puntaje_Quiz"]],
-                    "Quiz_R1": [datos_quiz["Resp_1"]],
-                    "Quiz_R2": [datos_quiz["Resp_2"]],
-                    "Quiz_R3": [datos_quiz["Resp_3"]],
-                    "Quiz_R4": [datos_quiz["Resp_4"]],
-                }
-                
-                # C. Generar CSV
-                df_resultados = pd.DataFrame(datos_finales)
-                csv = df_resultados.to_csv(index=False).encode('utf-8')
-
-                # D. Mostrar Éxito
-                st.success("¡Gracias! Módulo completado exitosamente.")
-                st.balloons()
-                
-                st.markdown("### 📥 Tu Reporte de Estudiante")
-                st.write("Descarga este archivo. Contiene tu nota del examen y tu constancia de participación.")
-                
-                # E. BOTÓN DE DESCARGA (Ahora sí está fuera del form y funcionará)
-                st.download_button(
-                    label="Descargar Reporte (.csv)",
-                    data=csv,
-                    file_name=f"Reporte_MOVEA_Mod1_{usuario}.csv",
-                    mime="text/csv",
-                )
+            enviado = st.form_submit_button("Enviar Resultados y Finalizar", type="primary")
+            
+            if enviado:
+                if not estudiante:
+                    st.warning("⚠️ Por favor ingresa tu nombre antes de enviar.")
+                elif r1 is None or r2 is None or r3 is None or r4 is None:
+                    st.warning("⚠️ Por favor responde todas las preguntas del quiz.")
+                else:
+                    with st.spinner("Sincronizando con la base de datos..."):
+                        try:
+                            pts = 0
+                            if r1 == "Sustancia sin forma fija que se deforma": pts += 1
+                            if r2 == "Transporta químicos y vapor hacia los polos": pts += 1
+                            if r3 == "Ascenso lento en trópicos": pts += 1
+                            if r4 == "Aumenta": pts += 1
+                            
+                            url_hoja = "https://docs.google.com/spreadsheets/d/1DVRJmYBDmAaJkLrxgCOedtglRfzSHyOcs0VfLNh_OFA/edit"
+                            conn = st.connection("gsheets", type=GSheetsConnection)
+                            df_existente = conn.read(spreadsheet=url_hoja)
+                            
+                            nuevo_registro = pd.DataFrame([{
+                                "Fecha": pd.Timestamp.now(tz="America/Bogota").strftime("%Y-%m-%d %H:%M:%S"),
+                                "Estudiante": estudiante,
+                                "Modulo": "1-Dinamica",
+                                "Puntaje": f"{pts}/4",
+                                "Q1_Respuesta": r1,
+                                "Q2_Respuesta": r2,
+                                "Q3_Respuesta": r3,
+                                "Q4_Respuesta": r4,
+                                "Valoracion": valoracion,
+                                "Comentarios": comentarios
+                            }])
+                            
+                            df_actualizado = pd.concat([df_existente, nuevo_registro], ignore_index=True)
+                            conn.update(spreadsheet=url_hoja, data=df_actualizado)
+                            
+                            st.success(f"¡Gracias {estudiante}! Módulo completado exitosamente.")
+                            if pts == 4: st.balloons()
+                        except Exception as e:
+                            st.error(f"Error de conexión: {e}")
 
     # --- FOOTER ---
     st.write("")
@@ -394,6 +337,7 @@ def render():
              st.button("🧠 Entender la teoría ➡️", on_click=siguiente, type="primary", use_container_width=True)
         else:
             mostrar_siguiente = False
-            if st.session_state.paso_modulo1 < 11: mostrar_siguiente = True
+            # Ajustado a 10 pasos máximos
+            if st.session_state.paso_modulo1 < 10: mostrar_siguiente = True
             if st.session_state.paso_modulo1 == 9 and st.session_state.view_simulador != 'menu': mostrar_siguiente = False
             if mostrar_siguiente: st.button("Siguiente ➡️", on_click=siguiente, key="btn_siguiente")

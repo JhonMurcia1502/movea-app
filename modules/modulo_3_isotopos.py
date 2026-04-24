@@ -3,6 +3,7 @@ import streamlit.components.v1 as components
 import pandas as pd
 import base64
 import os
+from streamlit_gsheets import GSheetsConnection
 
 # --- CONFIGURACIÓN DE LAS UNIDADES ---
 # Actualizado a 11 pasos totales para incluir el concepto de Fraccionamiento
@@ -11,8 +12,7 @@ UNIDADES = {
     "2. Expliquemos lo observado": 4, # Pasos 4-7 (Se añade Fraccionamiento)
     "3. Entendiendo el fenómeno": 8, 
     "4. Hora de explorar": 9, 
-    "5. Pon a prueba tu conocimiento": 10,
-    "6. Encuesta de satisfacción": 11
+    "5. Pon a prueba tu conocimiento y Encuesta": 10
 }
 
 # --- FUNCIÓN IMÁGENES ---
@@ -204,30 +204,62 @@ def render():
         st.markdown("Ahora que conocemos la teória es momento de verla en acción, utiliza el siguiente simulador para observar como ocurre el agotamiento de HDO en una parcela de aire a medida que asciende.")
         cargar_simulador_html()
 
-    # PASO 10: QUIZ
+# PASO 10: QUIZ Y ENCUESTA UNIFICADOS
     elif st.session_state.paso_modulo3 == 10:
-        st.header("5. Pon a prueba tu conocimiento")
-        with st.form("quiz_m3"):
+        st.header("5. Pon a prueba tu conocimiento y Encuesta Final")
+        st.markdown("Es momento de consolidar tu aprendizaje sobre fraccionamiento isotópico.")
+        
+        estudiante = st.text_input("Ingresa tu Nombre o Código de Estudiante:")
+        
+        with st.form("evaluacion_m3"):
+            st.subheader("A. Quiz de Huella Isotópica")
             q1 = st.radio("1. ¿Qué es el fraccionamiento isotópico?", ["La ruptura de moléculas", "El reparto desigual de isótopos en un cambio de fase"], index=None)
             q2 = st.radio("2. Si alpha es mayor a 1, el HDO...", ["Prefiere ser vapor", "Prefiere ser líquido"], index=None)
             q3 = st.radio("3. ¿Cuál modelo describe mejor la atmósfera real donde la lluvia cae?", ["Equilibrio", "Rayleigh"], index=None)
-            if st.form_submit_button("Enviar"):
-                pts = 0
-                if q1 == "El reparto desigual de isótopos en un cambio de fase": pts += 1
-                if q2 == "Prefiere ser líquido": pts += 1
-                if q3 == "Rayleigh": pts += 1
-                st.session_state.resultados_quiz_m3 = {"Puntaje": pts}
-                st.info(f"Resultado: {pts}/3")
-
-    # PASO 11: REPORTE
-    elif st.session_state.paso_modulo3 == 11:
-        st.header("6. Encuesta de satisfacción")
-        with st.form("encuesta_m3"):
-            user = st.text_input("Nombre")
-            rating = st.slider("Valoración", 1, 5, 5)
-            if st.form_submit_button("Finalizar y Reportar"):
-                df = pd.DataFrame({"Estudiante": [user], "Módulo": ["3"], "Valoración": [rating]})
-                st.download_button("Descargar Reporte", df.to_csv(index=False).encode('utf-8'), f"Reporte_M3_{user}.csv")
+            
+            st.divider()
+            st.subheader("B. Encuesta de Satisfacción")
+            valoracion = st.slider("Valora tu aprendizaje en este módulo (1 = Bajo, 5 = Alto)", 1, 5, 5)
+            comentarios = st.text_area("¿Algún comentario o duda sobre la destilación de Rayleigh?")
+            
+            enviado = st.form_submit_button("Enviar Resultados y Finalizar", type="primary")
+            
+            if enviado:
+                if not estudiante:
+                    st.warning("⚠️ Necesitamos tu nombre para guardar el progreso.")
+                elif q1 is None or q2 is None or q3 is None:
+                    st.warning("⚠️ No olvides responder todas las preguntas.")
+                else:
+                    with st.spinner("Enviando datos al servidor de MOVEA..."):
+                        try:
+                            pts = 0
+                            if q1 == "El reparto desigual de isótopos en un cambio de fase": pts += 1
+                            if q2 == "Prefiere ser líquido": pts += 1
+                            if q3 == "Rayleigh": pts += 1
+                            
+                            url_hoja = "https://docs.google.com/spreadsheets/d/1DVRJmYBDmAaJkLrxgCOedtglRfzSHyOcs0VfLNh_OFA/edit"
+                            conn = st.connection("gsheets", type=GSheetsConnection)
+                            df_existente = conn.read(spreadsheet=url_hoja)
+                            
+                            nuevo_registro = pd.DataFrame([{
+                                "Fecha": pd.Timestamp.now(tz="America/Bogota").strftime("%Y-%m-%d %H:%M:%S"),
+                                "Estudiante": estudiante,
+                                "Modulo": "3-Isotopos",
+                                "Puntaje": f"{pts}/3",
+                                "Q1_Respuesta": q1,
+                                "Q2_Respuesta": q2,
+                                "Q3_Respuesta": q3,
+                                "Valoracion": valoracion,
+                                "Comentarios": comentarios
+                            }])
+                            
+                            df_actualizado = pd.concat([df_existente, nuevo_registro], ignore_index=True)
+                            conn.update(spreadsheet=url_hoja, data=df_actualizado)
+                            
+                            st.success(f"¡Datos registrados, {estudiante}! Gran trabajo analizando isótopos.")
+                            if pts == 3: st.balloons()
+                        except Exception as e:
+                            st.error(f"Error de red: {e}")
 
     # FOOTER
     st.divider()
@@ -235,4 +267,5 @@ def render():
     with col_prev:
         if st.session_state.paso_modulo3 > 1: st.button("⬅️ Atrás", on_click=anterior, key="btn_atras_m3")
     with col_next:
-        if st.session_state.paso_modulo3 < 11: st.button("Siguiente ➡️", on_click=siguiente, key="btn_sig_m3")
+        # Ajustado a 10 pasos máximos
+        if st.session_state.paso_modulo3 < 10: st.button("Siguiente ➡️", on_click=siguiente, key="btn_sig_m3")
