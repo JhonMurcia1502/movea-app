@@ -189,13 +189,13 @@ def render():
                     """)
         col1, col2, col3 = st.columns(3)
         with col2:
-            st.image("https://cdn-icons-png.flaticon.com/512/169/169367.png", width=80)
+            st.image("assets/images/Icon_conduccion.png", use_container_width=100)
             if st.button("2. Conducción", use_container_width=True): st.session_state.popup_mecanismo = "conduccion"; st.rerun()
         with col1:
-            st.image("https://cdn-icons-png.flaticon.com/512/1541/1541486.png", width=80)
+            st.image("assets/images/Icon_radiacion.png", use_container_width=100)
             if st.button("1. Radiación", use_container_width=True): st.session_state.popup_mecanismo = "radiacion"; st.rerun()
         with col3:
-            st.image("https://cdn-icons-png.flaticon.com/512/950/950986.png", width=80)
+            st.image("assets/images/Icon_conveccion.png", use_container_width=100)
             if st.button("3. Convección", use_container_width=True): st.session_state.popup_mecanismo = "conveccion"; st.rerun()
 
     # --- UNIDAD 2: EXPLIQUEMOS (ANALOGÍA OLLA) ---
