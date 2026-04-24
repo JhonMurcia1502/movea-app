@@ -176,13 +176,12 @@ def render():
     # --- UNIDAD 5: QUIZ ---
     elif st.session_state.paso_modulo4 == 7:
        st.header("5. Pon a prueba tu conocimiento y Encuesta Final")
-    st.markdown("Ayúdanos a evaluar este simulador interactivo para la investigación. Tus respuestas se guardarán de forma segura.")
-
-    # 1. Identificación
-    estudiante = st.text_input("Ingresa tu Nombre o Código de Estudiante:")
-
-    # 2. Formulario unificado
-    with st.form("evaluacion_m4"):
+       st.markdown("Ayúdanos a evaluar este simulador interactivo para la investigación. Tus respuestas se guardarán de forma segura.")
+       
+       # 1. Identificación
+       estudiante = st.text_input("Ingresa tu Nombre o Código de Estudiante:")
+       # 2. Formulario unificado
+       with st.form("evaluacion_m4"):
         st.subheader("A. Quiz de Microfísica y Trazadores")
         q1 = st.radio("1. ¿Qué proceso físico 'detiene' el fraccionamiento de Rayleigh en las tormentas fuertes?", 
                       ["La ebullición", "La congelación rápida del agua en hielo", "La conducción de calor"], index=None)
